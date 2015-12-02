@@ -2,6 +2,7 @@
 	path = nutch
 	url = git@github.com:apache/nutch.git
 	branch = branch-1.10
-[submodule "wonutch"]
-	path = wonutch
-	url = git@github.com:wobot-ru/wonutch.git
+[submodule "wonutch-plugins"]
+	path = wonutch-plugins
+	url = git@github.com:wobot-ru/wonutch-plugins.git
+	branch = trunk

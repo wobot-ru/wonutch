@@ -5,14 +5,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.wobot</groupId>
-    <artifactId>nutch-deploy</artifactId>
-    <version>1.0.0</version>
+    <artifactId>wonutch</artifactId>
+    <version>0.0.1</version>
     <packaging>pom</packaging>
 
+    <name>wonutch</name>
     <description>
         Aggregation module for build and deploy Apache Nutch with plugins, developed by Wobot
     </description>
-    <url>https://github.com/wobot-ru/nutch-deploy</url>
+    <url>https://github.com/wobot-ru/wonutch</url>
 
     <organization>
         <name>Wobot</name>
@@ -20,10 +21,10 @@
     </organization>
 
     <scm>
-        <url>https://github.com/wobot-ru/nutch-deploy.git</url>
+        <url>https://github.com/wobot-ru/wonutch.git</url>
     </scm>
 
     <modules>
-        <module>wonutch</module>
+        <module>wonutch-plugins</module>
     </modules>
 </project>
