@@ -24,6 +24,51 @@
         <url>https://github.com/wobot-ru/wonutch.git</url>
     </scm>
 
+    <build>
+        <plugins>
+            <!--plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <finalName>${project.name}</finalName>
+                    <descriptors>
+                        <descriptor>assembly.xml</descriptor>
+                    </descriptors>
+                    <appendAssemblyId>false</appendAssemblyId>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin-->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                        <configuration>
+                            <tasks>
+                                <copy todir="${NUTCH_HOME}/plugins/${project.name}">
+                                    <fileset dir="${project.build.directory}/${project.name}" includes="**"/>
+                                </copy>
+                                <delete dir="${NUTCH_HOME}/plugins/${project.parent.artifactId}"/>
+                            </tasks>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
     <modules>
         <module>wonutch-plugins</module>
     </modules>
