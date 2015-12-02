@@ -1,0 +1,7 @@
+[submodule "nutch"]
+	path = nutch
+	url = git@github.com:apache/nutch.git
+	branch = branch-1.10
+[submodule "wonutch"]
+	path = wonutch
+	url = git@github.com:wobot-ru/wonutch.git

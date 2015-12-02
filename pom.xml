@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ru.wobot</groupId>
+    <artifactId>nutch-deploy</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <description>
+        Aggregation module for build and deploy Apache Nutch with plugins, developed by Wobot
+    </description>
+    <url>https://github.com/wobot-ru/nutch-deploy</url>
+
+    <organization>
+        <name>Wobot</name>
+        <url>http://wobot.ru/</url>
+    </organization>
+
+    <scm>
+        <url>https://github.com/wobot-ru/nutch-deploy.git</url>
+    </scm>
+
+    <modules>
+        <module>wonutch</module>
+    </modules>
+</project>
