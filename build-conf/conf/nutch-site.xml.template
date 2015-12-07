@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+      <property>
+        <name>http.agent.name</name>
+        <value>WoNutch Spider</value>
+    </property>
+    <property>
+        <name>fetcher.parse</name>
+        <value>false</value>
+    </property>
+    <property>
+        <name>plugin.includes</name>
+        <value>protocol-vk|parse-vk|urlfilter-regex|parse-html|index-(basic|anchor|metadata|more|static)|indexer-multielastic|scoring-opic|urlnormalizer-(pass|regex|basic)</value> 
+    </property>
+    <property>
+        <name>parser.character.encoding.default</name>
+        <value>UTF-8</value>
+    </property>
+
+    <property>
+        <name>elastic.host</name>
+        <value>localhost</value>
+    </property>
+
+    <property>
+        <name>elastic.port</name>
+        <value>9300</value>
+        <description>
+        </description>
+    </property>
+
+    <property>
+        <name>elastic.index</name>
+        <value>nutch</value>
+    </property>
+</configuration>
