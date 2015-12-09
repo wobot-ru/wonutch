@@ -990,6 +990,7 @@
         <source path="${plugins.dir}/indexer-dummy/src/java/" />
         <source path="${plugins.dir}/indexer-solr/src/java/" />
         <source path="${plugins.dir}/indexer-elastic/src/java/" />
+        <source path="${plugins.dir}/indexer-multielastic/src/java/" />
         <source path="${plugins.dir}/index-metadata/src/java/" />
         <source path="${plugins.dir}/index-more/src/java/" />
         <source path="${plugins.dir}/index-more/src/test/" />
@@ -1019,6 +1020,7 @@
         <source path="${plugins.dir}/parse-tika/src/test/" />
         <source path="${plugins.dir}/parse-zip/src/java/" />
         <source path="${plugins.dir}/parse-zip/src/test/" />
+        <source path="${plugins.dir}/parse-vk/src/java/" />
         <source path="${plugins.dir}/protocol-file/src/java/" />
         <source path="${plugins.dir}/protocol-file/src/test/" />
         <source path="${plugins.dir}/protocol-ftp/src/java/" />
@@ -1028,6 +1030,7 @@
         <source path="${plugins.dir}/protocol-http/src/test/" />
         <source path="${plugins.dir}/protocol-selenium/src/java"/>
         <source path="${plugins.dir}/protocol-selenium/src/test"/>
+        <source path="${plugins.dir}/protocol-vk/src/java"/>
         <source path="${plugins.dir}/scoring-depth/src/java/" />
         <source path="${plugins.dir}/scoring-link/src/java/" />
         <source path="${plugins.dir}/scoring-opic/src/java/" />
