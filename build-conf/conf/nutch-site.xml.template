@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
 <configuration>
-      <property>
+    <property>
         <name>http.agent.name</name>
         <value>WoNutch Spider</value>
     </property>
@@ -17,21 +17,32 @@
         <name>parser.character.encoding.default</name>
         <value>UTF-8</value>
     </property>
-
     <property>
         <name>elastic.host</name>
-        <value>localhost</value>
+        <value>nnode</value>
     </property>
-
     <property>
         <name>elastic.port</name>
         <value>9300</value>
-        <description>
-        </description>
     </property>
-
     <property>
         <name>elastic.index</name>
-        <value>nutch</value>
+        <value>wonutch</value>
+    </property>
+    <property>
+        <name>mapreduce.job.user.classpath.first</name>
+        <value>true</value>
+    </property>
+    <property>
+        <name>fetcher.server.delay</name>
+        <value>0.4</value>
+    </property>
+    <property>
+        <name>mapred.job.tracker</name>
+        <value>nnode</value>
+    </property>
+    <property>
+        <name>fetcher.threads.fetch</name>
+        <value>50</value>
     </property>
 </configuration>
