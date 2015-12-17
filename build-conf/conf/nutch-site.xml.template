@@ -38,15 +38,15 @@
         <value>true</value>
     </property>
     <property>
-        <name>fetcher.server.delay</name>
-        <value>0.4</value>
-    </property>
-    <property>
         <name>mapred.job.tracker</name>
         <value>nnode</value>
     </property>
     <property>
         <name>fetcher.threads.fetch</name>
+        <value>50</value>
+    </property>
+    <property>
+        <name>fetcher.threads.per.queue</name>
         <value>50</value>
     </property>
 </configuration>

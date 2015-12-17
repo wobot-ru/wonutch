@@ -58,6 +58,7 @@
                                 </copy>
                                 <copy file="build-conf/src/plugin/build.xml" overwrite="true" todir="nutch/src/plugin"/>
                                 <copy file="build-conf/ivy/ivysettings.xml" overwrite="true" todir="nutch/ivy"/>
+                                <copy file="build-conf/ivy/ivy.xml" overwrite="true" todir="nutch/ivy"/>
                                 <copy file="build-conf/conf/nutch-site.xml.template" overwrite="true" todir="nutch/conf"/>
                                 <ant dir="${project.basedir}/nutch" target="runtime"/>
                             </target>
