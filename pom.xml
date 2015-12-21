@@ -21,7 +21,10 @@
     </organization>
 
     <scm>
+        <connection>scm:git:git@github.com:wobot-ru/wonutch.git</connection>
+        <developerConnection>scm:git:git@github.com:wobot-ru/wonutch.git</developerConnection>
         <url>https://github.com/wobot-ru/wonutch.git</url>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
@@ -65,6 +68,16 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <autoVersionSubmodules>false</autoVersionSubmodules>
+                    <tagNameFormat>release-@{project.version}</tagNameFormat>
+                    <preparationGoals>clean test</preparationGoals>
+                </configuration>
             </plugin>
         </plugins>
     </build>
