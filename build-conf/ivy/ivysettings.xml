@@ -37,6 +37,9 @@
   <property name="snapshots.wobot.local"
     value="http://artifactory.wobot.local/artifactory/libs-snapshot"
     override="false"/>
+  <property name="release.wobot.local"
+    value="http://artifactory.wobot.local/artifactory/libs-release-local"
+    override="false"/>
   <property name="maven2.pattern"
     value="[organisation]/[module]/[revision]/[module]-[revision]"/>
   <property name="maven2.pattern.ext"
@@ -69,9 +72,15 @@
       changingPattern=".*SNAPSHOT.*" 
       checkmodified="true"
       />
+    <ibiblio name="wobot-release"
+      root="${release.wobot.local}"
+      pattern="${maven2.pattern.ext}"
+      m2compatible="true"
+      />
     <chain name="default" dual="true">
       <resolver ref="local"/>
       <resolver ref="wobot-snapshot"/>
+      <resolver ref="wobot-release"/>
       <resolver ref="maven2"/>
       <resolver ref="apache-snapshot"/>
       <resolver ref="sonatype"/>
@@ -84,6 +93,7 @@
     </chain>
     <chain name="external-and-snapshots">
       <resolver ref="wobot-snapshot"/>
+      <resolver ref="wobot-release"/>
       <resolver ref="maven2"/>
       <resolver ref="apache-snapshot"/>
       <resolver ref="sonatype"/>
