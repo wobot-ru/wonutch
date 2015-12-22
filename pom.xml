@@ -6,7 +6,7 @@
 
     <groupId>ru.wobot</groupId>
     <artifactId>wonutch</artifactId>
-    <version>0.1.0</version>
+    <version>0.2.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <name>wonutch</name>
@@ -24,7 +24,7 @@
         <connection>scm:git:git@github.com:wobot-ru/wonutch.git</connection>
         <developerConnection>scm:git:git@github.com:wobot-ru/wonutch.git</developerConnection>
         <url>https://github.com/wobot-ru/wonutch.git</url>
-        <tag>release-0.1.0</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <build>
