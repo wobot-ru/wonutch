@@ -11,7 +11,7 @@
     </property>
     <property>
         <name>plugin.includes</name>
-        <value>protocol-vk|parse-vk|urlfilter-regex|parse-html|index-(basic|anchor|metadata|more|static)|indexer-multielastic2|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
+        <value>protocol-vk|parse-vk|urlfilter-regex|parse-html|index-(basic|anchor|metadata|more|static|multipage)|indexer-multielastic2|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
     </property>
     <property>
         <name>parser.character.encoding.default</name>
