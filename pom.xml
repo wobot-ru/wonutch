@@ -24,7 +24,6 @@
         <connection>scm:git:git@github.com:wobot-ru/wonutch.git</connection>
         <developerConnection>scm:git:git@github.com:wobot-ru/wonutch.git</developerConnection>
         <url>https://github.com/wobot-ru/wonutch.git</url>
-        <tag>HEAD</tag>
     </scm>
 
     <build>
