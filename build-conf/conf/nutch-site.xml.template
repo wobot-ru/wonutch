@@ -49,4 +49,12 @@
         <name>fetcher.threads.per.queue</name>
         <value>50</value>
     </property>
+    <property>
+        <name>smm.accounts</name>
+        <value>vk-accounts.txt</value>
+    </property>
+    <property>
+        <name>smm.requests.persecond</name>
+        <value>3</value>
+    </property>
 </configuration>
