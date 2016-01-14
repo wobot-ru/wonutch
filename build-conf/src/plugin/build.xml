@@ -47,14 +47,14 @@
      <ant dir="lib-nekohtml" target="deploy"/>
      <ant dir="lib-regex-filter" target="deploy"/>
      <ant dir="lib-xml" target="deploy"/>
-     <ant dir="lib-vk" target="deploy"/>
+     <ant dir="lib-sm" target="deploy"/>
      <ant dir="microformats-reltag" target="deploy"/>
      <ant dir="nutch-extensionpoints" target="deploy"/>
      <ant dir="protocol-file" target="deploy"/>
      <ant dir="protocol-ftp" target="deploy"/>
      <ant dir="protocol-http" target="deploy"/>
      <ant dir="protocol-httpclient" target="deploy"/>
-     <ant dir="protocol-vk" target="deploy"/>
+     <ant dir="protocol-sm" target="deploy"/>
      <ant dir="lib-selenium" target="deploy"/>
      <ant dir="protocol-selenium" target="deploy" />
      <ant dir="parse-ext" target="deploy"/>
@@ -64,7 +64,7 @@
      <ant dir="parse-swf" target="deploy"/>
      <ant dir="parse-tika" target="deploy"/>
      <ant dir="parse-zip" target="deploy"/>
-     <ant dir="parse-vk" target="deploy"/>
+     <ant dir="parse-sm" target="deploy"/>
      <ant dir="scoring-depth" target="deploy"/>
      <ant dir="scoring-opic" target="deploy"/>
      <ant dir="scoring-link" target="deploy"/>
@@ -102,7 +102,7 @@
      <ant dir="mimetype-filter" target="test"/>
      <ant dir="language-identifier" target="test"/>
      <ant dir="lib-http" target="test"/>
-     <ant dir="lib-vk" target="test"/>
+     <ant dir="lib-sm" target="test"/>
      <ant dir="protocol-file" target="test"/>
      <ant dir="protocol-http" target="test"/>
      <ant dir="protocol-httpclient" target="test"/>
@@ -158,14 +158,14 @@
     <ant dir="lib-nekohtml" target="clean"/>
     <ant dir="lib-regex-filter" target="clean"/>
     <ant dir="lib-xml" target="clean"/>
-    <ant dir="lib-vk" target="clean"/>
+    <ant dir="lib-sm" target="clean"/>
     <ant dir="microformats-reltag" target="clean"/>
     <ant dir="nutch-extensionpoints" target="clean"/>
     <ant dir="protocol-file" target="clean"/>
     <ant dir="protocol-ftp" target="clean"/>
     <ant dir="protocol-http" target="clean"/>
     <ant dir="protocol-httpclient" target="clean"/>
-    <ant dir="protocol-vk" target="clean"/>
+    <ant dir="protocol-sm" target="clean"/>
     <ant dir="lib-selenium" target="clean"/>
     <ant dir="protocol-selenium" target="clean" />
     <ant dir="parse-ext" target="clean"/>
@@ -175,7 +175,7 @@
     <ant dir="parse-swf" target="clean"/>
     <ant dir="parse-tika" target="clean"/>
     <ant dir="parse-zip" target="clean"/>
-    <ant dir="parse-vk" target="clean"/>
+    <ant dir="parse-sm" target="clean"/>
     <ant dir="scoring-depth" target="clean"/>
     <ant dir="scoring-opic" target="clean"/>
     <ant dir="scoring-link" target="clean"/>
