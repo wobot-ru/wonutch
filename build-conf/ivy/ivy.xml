@@ -78,8 +78,9 @@
                 <dependency org="org.apache.cxf" name="cxf-rt-transports-http-jetty" rev="3.0.4"/>
                 <dependency org="com.fasterxml.jackson.core" name="jackson-databind" rev="2.5.1" /> 
                 <dependency org="com.fasterxml.jackson.dataformat" name="jackson-dataformat-cbor" rev="2.5.1" />
-                <dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.5.1" />	
+                <dependency org="com.fasterxml.jackson.jaxrs" name="jackson-jaxrs-json-provider" rev="2.5.1" />
 
+		<dependency org="ru.wobot" name="sm-protocols" rev="0.2.0" />
 		<!--Configuration: test -->
 
 		<!--artifacts needed for testing -->
