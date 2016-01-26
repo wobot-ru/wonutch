@@ -11,7 +11,7 @@
     </property>
     <property>
         <name>plugin.includes</name>
-        <value>protocol-sm|parse-sm|parse-html|index-(basic|anchor|metadata|more|static|multipage)|indexer-multielastic2|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
+        <value>protocol-sm|parse-sm|index-sm|indexer-sm-elastic-2|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
     </property>
     <property>
         <name>parser.character.encoding.default</name>
@@ -19,7 +19,7 @@
     </property>
     <property>
         <name>elastic.host</name>
-        <value>nnode</value>
+        <value>worker2</value>
     </property>
     <property>
         <name>elastic.port</name>
@@ -27,11 +27,11 @@
     </property>
     <property>
         <name>elastic.cluster</name>
-        <value>wobot</value>
+        <value>wobot-es</value>
     </property>
     <property>
         <name>elastic.index</name>
-        <value>wonutch</value>
+        <value>wobot</value>
     </property>
     <property>
         <name>mapreduce.job.user.classpath.first</name>
