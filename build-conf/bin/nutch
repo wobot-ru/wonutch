@@ -291,6 +291,9 @@ else
     echo "Can't find Hadoop executable. Add HADOOP_HOME/bin to the path or run in local mode."
     exit -1;
  fi
+ export HADOOP_USER_CLASSPATH_FIRST=true
+ export HADOOP_CLASSPATH=$NUTCH_HOME/lib/guava-18.0.jar
+
 fi
 
 # run it
