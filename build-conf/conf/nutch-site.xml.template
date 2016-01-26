@@ -42,6 +42,16 @@
         <value>nnode</value>
     </property>
     <property>
+      <name>elastic.max.bulk.docs</name>
+      <value>2500</value>
+      <description>Maximum size of the bulk in number of documents.</description>
+    </property>
+    <property>
+      <name>elastic.max.bulk.size</name>
+      <value>25005000</value>
+      <description>Maximum size of the bulk in bytes.</description>
+    </property>
+    <property>
         <name>fetcher.threads.fetch</name>
         <value>50</value>
     </property>
