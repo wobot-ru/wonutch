@@ -277,23 +277,22 @@ else
   CLASS=$COMMAND
 fi
 
-# add support for url schemas, like fb:// vk:// etc
-NUTCH_OPTS=($NUTCH_OPTS -Djava.protocol.handler.pkgs="ru.wobot.sm.protocols")
-
 # distributed mode
 EXEC_CALL=(hadoop jar "$NUTCH_JOB")
 
 if $local; then
- EXEC_CALL=("$JAVA" $JAVA_HEAP_MAX "${NUTCH_OPTS[@]}" -classpath "$CLASSPATH")
+  # add support for url schemas, like fb:// vk:// etc
+  NUTCH_OPTS=($NUTCH_OPTS -Djava.protocol.handler.pkgs="ru.wobot.sm.protocols")
+  EXEC_CALL=("$JAVA" $JAVA_HEAP_MAX "${NUTCH_OPTS[@]}" -classpath "$CLASSPATH")
 else
- # check that hadoop can be found on the path
- if [ $(which hadoop | wc -l ) -eq 0 ]; then
-    echo "Can't find Hadoop executable. Add HADOOP_HOME/bin to the path or run in local mode."
-    exit -1;
- fi
- export HADOOP_USER_CLASSPATH_FIRST=true
- export HADOOP_CLASSPATH=$NUTCH_HOME/lib/guava-18.0.jar
-
+  # check that hadoop can be found on the path
+  if [ $(which hadoop | wc -l ) -eq 0 ]; then
+     echo "Can't find Hadoop executable. Add HADOOP_HOME/bin to the path or run in local mode."
+     exit -1;
+  fi
+  # make new guava lib be before hadoop's in classpath 
+  export HADOOP_USER_CLASSPATH_FIRST=true
+  export HADOOP_CLASSPATH="$NUTCH_HOME/lib/guava-18.0.jar"
 fi
 
 # run it
