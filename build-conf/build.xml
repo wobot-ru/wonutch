@@ -22,6 +22,7 @@
   <property file="${user.home}/build.properties" />
   <property file="${basedir}/build.properties" />
   <property file="${basedir}/default.properties" />
+  <property name="test.junit.output.format" value="plain"/>
   <property name="release.dir" value="${build.dir}/release"/>
   
   <!-- define Maven coordinates, repository url and artifacts name etc -->
@@ -173,6 +174,18 @@
         <arg value="${javadoc.proxy.port}"/>
 
       <packageset dir="${src.dir}"/>
+      <!-- wonutch plugins -->
+      <packageset dir="${plugins.dir}/lib-sm/src/java"/>
+      <packageset dir="${plugins.dir}/protocol-sm/src/java"/>
+      <packageset dir="${plugins.dir}/parse-sm/src/java"/>
+      <packageset dir="${plugins.dir}/index-sm/src/java"/>
+      <packageset dir="${plugins.dir}/indexer-sm-elastic-2/src/java/" />
+
+      <packageset dir="${plugins.dir}/index-multipage/src/java"/>
+      <packageset dir="${plugins.dir}/indexer-multielastic/src/java"/>
+      <packageset dir="${plugins.dir}/indexer-multielastic2/src/java"/>
+      <!-- wonutch end -->
+
       <packageset dir="${plugins.dir}/creativecommons/src/java"/>
       <packageset dir="${plugins.dir}/feed/src/java"/>
       <packageset dir="${plugins.dir}/headings/src/java"/>
@@ -460,6 +473,10 @@
       <fileset dir="src/testresources" includes="**/*"/>
     </copy>
 
+    <!-- wonutch -->
+    <copy file="${test.src.dir}/nutch-site.xml"
+          todir="${test.build.classes}"/>
+
     <copy file="${test.src.dir}/log4j.properties"
           todir="${test.build.classes}"/>
 
@@ -611,6 +628,18 @@
         <arg value="${javadoc.proxy.port}"/>
 
       <packageset dir="${src.dir}"/>
+      <!-- wonutch plugins -->
+      <packageset dir="${plugins.dir}/lib-sm/src/java"/>
+      <packageset dir="${plugins.dir}/protocol-sm/src/java"/>
+      <packageset dir="${plugins.dir}/parse-sm/src/java"/>
+      <packageset dir="${plugins.dir}/index-sm/src/java"/>
+      <packageset dir="${plugins.dir}/indexer-sm-elastic-2/src/java/" />
+
+      <packageset dir="${plugins.dir}/index-multipage/src/java"/>
+      <packageset dir="${plugins.dir}/indexer-multielastic/src/java"/>
+      <packageset dir="${plugins.dir}/indexer-multielastic2/src/java"/>
+      <!-- wonutch end -->
+
       <packageset dir="${plugins.dir}/creativecommons/src/java"/>
       <packageset dir="${plugins.dir}/feed/src/java"/>
       <packageset dir="${plugins.dir}/headings/src/java"/>
@@ -1002,7 +1031,27 @@
         
         <source path="${basedir}/src/java/" />
         <source path="${basedir}/src/test/" output="build/test/classes" />
-        
+
+        <!-- wonutch plugins -->
+        <source path="${plugins.dir}/lib-sm/src/java/"/>
+        <source path="${plugins.dir}/lib-sm/src/test/"/>
+        <source path="${plugins.dir}/protocol-sm/src/java/"/>
+        <source path="${plugins.dir}/protocol-sm/src/test/"/>
+        <source path="${plugins.dir}/parse-sm/src/java/"/>
+        <source path="${plugins.dir}/parse-sm/src/test/"/>
+        <source path="${plugins.dir}/index-sm/src/java/"/>
+        <source path="${plugins.dir}/index-sm/src/test/"/>
+        <source path="${plugins.dir}/indexer-sm-elastic-2/src/java/" />
+        <source path="${plugins.dir}/indexer-sm-elastic-2/src/test/" />
+
+        <source path="${plugins.dir}/index-multipage/src/java/"/>
+        <source path="${plugins.dir}/index-multipage/src/test/"/>
+        <source path="${plugins.dir}/indexer-multielastic/src/java/"/>
+        <source path="${plugins.dir}/indexer-multielastic/src/test/"/>
+        <source path="${plugins.dir}/indexer-multielastic2/src/java/"/>
+        <source path="${plugins.dir}/indexer-multielastic2/src/test/"/>
+        <!-- wonutch end -->
+
         <source path="${plugins.dir}/creativecommons/src/java/" />
         <source path="${plugins.dir}/creativecommons/src/test/" />
         <source path="${plugins.dir}/feed/src/java/" />
