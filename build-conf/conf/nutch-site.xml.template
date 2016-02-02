@@ -7,7 +7,7 @@
     </property>
     <property>
         <name>fetcher.parse</name>
-        <value>false</value>
+        <value>true</value>
     </property>
     <property>
         <name>plugin.includes</name>

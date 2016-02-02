@@ -170,7 +170,7 @@ do
 
   # fetching the segment
   echo "Fetching : $SEGMENT"
-  # enable paese during fetch
+  # enable parse during fetch
   #__bin_nutch fetch $commonOptions -D fetcher.timelimit.mins=$timeLimitFetch "$CRAWL_PATH"/segments/$SEGMENT -noParsing -threads $numThreads
    __bin_nutch fetch $commonOptions -D fetcher.timelimit.mins=$timeLimitFetch "$CRAWL_PATH"/segments/$SEGMENT -threads $numThreads
 
