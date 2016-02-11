@@ -27,7 +27,7 @@
     </property>
     <property>
         <name>elastic.cluster</name>
-        <value>wobot-es</value>
+        <value>wobot-cluster</value>
     </property>
     <property>
         <name>elastic.index</name>
@@ -61,10 +61,10 @@
     </property>
     <property>
         <name>sm.accounts</name>
-        <value>vk-accounts.txt</value>
+        <value>fb-accounts.txt</value>
     </property>
     <property>
         <name>sm.requests.persecond</name>
-        <value>3</value>
+        <value>50</value>
     </property>
 </configuration>
