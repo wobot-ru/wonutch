@@ -60,11 +60,19 @@
         <value>50</value>
     </property>
     <property>
-        <name>sm.accounts</name>
+        <name>sm.accounts.fb</name>
         <value>fb-accounts.txt</value>
     </property>
     <property>
-        <name>sm.requests.persecond</name>
+        <name>sm.requests.persecond.fb</name>
         <value>50</value>
+    </property>
+	<property>
+        <name>sm.accounts.vk</name>
+        <value>vk-accounts.txt</value>
+    </property>
+    <property>
+        <name>sm.requests.persecond.vk</name>
+        <value>3</value>
     </property>
 </configuration>
