@@ -11,7 +11,7 @@
     </property>
     <property>
         <name>plugin.includes</name>
-        <value>protocol-sm|parse-sm|index-sm|indexer-sm-elastic-2|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
+        <value>protocol-sm|protocol-sm-selenium|parse-sm|index-sm|indexer-sm-elastic-2|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
     </property>
     <property>
         <name>parser.character.encoding.default</name>
@@ -62,6 +62,10 @@
     <property>
         <name>sm.accounts.fb</name>
         <value>fb-accounts.txt</value>
+    </property>
+    <property>
+        <name>sm.accounts.vk</name>
+        <value>vk-accounts.txt</value>
     </property>
     <property>
         <name>sm.requests.persecond.fb</name>
