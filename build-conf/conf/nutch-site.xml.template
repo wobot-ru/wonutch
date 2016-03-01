@@ -71,10 +71,6 @@
         <name>sm.requests.persecond.fb</name>
         <value>50</value>
     </property>
-	<property>
-        <name>sm.accounts.vk</name>
-        <value>vk-accounts.txt</value>
-    </property>
     <property>
         <name>sm.requests.persecond.vk</name>
         <value>3</value>
