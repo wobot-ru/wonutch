@@ -10,9 +10,7 @@ CNT="$1"
 
 for ((i=1; i <= CNT ; i++))
 do
-
-  docker run -d -e "PHANTOMJS_OPTS=--ignore-ssl-errors=yes --web-security=no --ssl-protocol=any" --link selenium-hub:hub akeem/selenium-node-phantomjs
-
+    docker run -d -e "PHANTOMJS_OPTS=--ignore-ssl-errors=yes --web-security=no --ssl-protocol=any" --link selenium-hub:hub akeem/selenium-node-phantomjs
 done
 
 exit 0
