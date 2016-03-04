@@ -65,6 +65,7 @@
                                 <copy file="build-conf/conf/prefix-urlfilter.txt.template" overwrite="true" todir="nutch/conf"/>
                                 <copy file="build-conf/conf/vk-accounts.txt" overwrite="true" todir="nutch/conf"/>
                                 <copy file="build-conf/conf/fb-accounts.txt" overwrite="true" todir="nutch/conf"/>
+                                <copy file="build-conf/conf/cookies.json" overwrite="true" todir="nutch/conf"/>
                                 <ant dir="${project.basedir}/nutch" target="runtime"/>
                             </target>
                         </configuration>

@@ -55,6 +55,7 @@
      <ant dir="protocol-http" target="deploy"/>
      <ant dir="protocol-httpclient" target="deploy"/>
      <ant dir="protocol-sm" target="deploy"/>
+     <ant dir="protocol-sm-selenium" target="deploy"/>
      <ant dir="lib-selenium" target="deploy"/>
      <ant dir="protocol-selenium" target="deploy" />
      <ant dir="parse-ext" target="deploy"/>
@@ -65,6 +66,7 @@
      <ant dir="parse-tika" target="deploy"/>
      <ant dir="parse-zip" target="deploy"/>
      <ant dir="parse-sm" target="deploy"/>
+     <ant dir="parse-fb" target="deploy"/>
      <ant dir="scoring-depth" target="deploy"/>
      <ant dir="scoring-opic" target="deploy"/>
      <ant dir="scoring-link" target="deploy"/>
@@ -166,6 +168,7 @@
     <ant dir="protocol-http" target="clean"/>
     <ant dir="protocol-httpclient" target="clean"/>
     <ant dir="protocol-sm" target="clean"/>
+    <ant dir="protocol-sm-selenium" target="clean"/>
     <ant dir="lib-selenium" target="clean"/>
     <ant dir="protocol-selenium" target="clean" />
     <ant dir="parse-ext" target="clean"/>
@@ -176,6 +179,7 @@
     <ant dir="parse-tika" target="clean"/>
     <ant dir="parse-zip" target="clean"/>
     <ant dir="parse-sm" target="clean"/>
+    <ant dir="parse-fb" target="clean"/>
     <ant dir="scoring-depth" target="clean"/>
     <ant dir="scoring-opic" target="clean"/>
     <ant dir="scoring-link" target="clean"/>

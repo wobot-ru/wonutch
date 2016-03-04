@@ -11,7 +11,7 @@
     </property>
     <property>
         <name>plugin.includes</name>
-        <value>protocol-sm|protocol-sm-selenium|parse-sm|index-sm|indexer-sm-elastic-2|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
+        <value>protocol-sm|protocol-sm-selenium|parse-sm|parse-fb|index-sm|indexer-sm-elastic-2|scoring-opic|urlnormalizer-(pass|regex|basic)</value>
     </property>
     <property>
         <name>parser.character.encoding.default</name>

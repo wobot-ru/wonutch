@@ -199,12 +199,14 @@
       <packageset dir="${plugins.dir}/parse-tika/src/java"/>
       <packageset dir="${plugins.dir}/parse-zip/src/java"/>
       <packageset dir="${plugins.dir}/parse-sm/src/java"/>
+      <packageset dir="${plugins.dir}/parse-fb/src/java"/>
       <packageset dir="${plugins.dir}/protocol-file/src/java"/>
       <packageset dir="${plugins.dir}/protocol-ftp/src/java"/>
       <packageset dir="${plugins.dir}/protocol-http/src/java"/>
       <packageset dir="${plugins.dir}/protocol-httpclient/src/java"/>
       <packageset dir="${plugins.dir}/protocol-selenium/src/java"/>
       <packageset dir="${plugins.dir}/protocol-sm/src/java"/>
+      <packageset dir="${plugins.dir}/protocol-sm-selenium/src/java"/>
       <packageset dir="${plugins.dir}/scoring-depth/src/java"/>
       <packageset dir="${plugins.dir}/scoring-link/src/java"/>
       <packageset dir="${plugins.dir}/scoring-opic/src/java"/>
@@ -615,12 +617,14 @@
       <packageset dir="${plugins.dir}/parse-tika/src/java"/>
       <packageset dir="${plugins.dir}/parse-zip/src/java"/>
       <packageset dir="${plugins.dir}/parse-sm/src/java"/>
+      <packageset dir="${plugins.dir}/parse-fb/src/java"/>
       <packageset dir="${plugins.dir}/protocol-file/src/java"/>
       <packageset dir="${plugins.dir}/protocol-ftp/src/java"/>
       <packageset dir="${plugins.dir}/protocol-http/src/java"/>
       <packageset dir="${plugins.dir}/protocol-httpclient/src/java"/>
       <packageset dir="${plugins.dir}/protocol-selenium/src/java"/>
       <packageset dir="${plugins.dir}/protocol-sm/src/java"/>
+      <packageset dir="${plugins.dir}/protocol-sm-selenium/src/java"/>
       <packageset dir="${plugins.dir}/scoring-depth/src/java"/>
       <packageset dir="${plugins.dir}/scoring-link/src/java"/>
       <packageset dir="${plugins.dir}/scoring-opic/src/java"/>
@@ -1028,6 +1032,7 @@
         <source path="${plugins.dir}/parse-zip/src/java/" />
         <source path="${plugins.dir}/parse-zip/src/test/" />
         <source path="${plugins.dir}/parse-sm/src/java/" />
+        <source path="${plugins.dir}/parse-fb/src/java/" />
         <source path="${plugins.dir}/protocol-file/src/java/" />
         <source path="${plugins.dir}/protocol-file/src/test/" />
         <source path="${plugins.dir}/protocol-ftp/src/java/" />
@@ -1038,6 +1043,7 @@
         <source path="${plugins.dir}/protocol-selenium/src/java"/>
         <source path="${plugins.dir}/protocol-selenium/src/test"/>
         <source path="${plugins.dir}/protocol-sm/src/java"/>
+        <source path="${plugins.dir}/protocol-sm-selenium/src/java"/>
         <source path="${plugins.dir}/scoring-depth/src/java/" />
         <source path="${plugins.dir}/scoring-link/src/java/" />
         <source path="${plugins.dir}/scoring-opic/src/java/" />
