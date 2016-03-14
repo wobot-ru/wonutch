@@ -63,6 +63,7 @@
                                 <copy file="build-conf/ivy/ivy.xml" overwrite="true" todir="nutch/ivy"/>
                                 <copy file="build-conf/conf/nutch-site.xml.template" overwrite="true" todir="nutch/conf"/>
                                 <copy file="build-conf/conf/prefix-urlfilter.txt.template" overwrite="true" todir="nutch/conf"/>
+                                <copy file="build-conf/conf/parse-plugins.xml" overwrite="true" todir="nutch/conf"/>
                                 <copy file="build-conf/conf/vk-accounts.txt" overwrite="true" todir="nutch/conf"/>
                                 <copy file="build-conf/conf/fb-accounts.txt" overwrite="true" todir="nutch/conf"/>
                                 <copy file="build-conf/conf/cookies.json" overwrite="true" todir="nutch/conf"/>

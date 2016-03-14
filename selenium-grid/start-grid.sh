@@ -6,6 +6,10 @@ if [[ $# != 1 ]]; then
     exit 1
 fi
 
+# consider this parameter in prod env 
+# JAVA_OPTS=-DPOOL_MAX=512
+docker run -d -p 4444:4444 -e SE_OPTS="-timeout 0 -maxSession 10 -newSessionWaitTimeout 3000" --name selenium-hub selenium/hub
+
 CNT="$1"
 
 for ((i=1; i <= CNT ; i++))

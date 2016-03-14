@@ -91,11 +91,17 @@ if [ -f "${bin}"/../*nutch*.job ]; then
     mode=distributed
 fi
 
+# determines whether need to run selenium grid
+selenium=false
+if [ -f "${bin}"/../../selenium-grid/nodes.txt ]; then
+    selenium=true
+fi
+
 # note that some of the options listed here could be set in the 
 # corresponding hadoop site xml param file 
 commonOptions="-D mapred.reduce.tasks=$numTasks -D mapred.child.java.opts=-Xmx1000m -D mapred.reduce.tasks.speculative.execution=false -D mapred.map.tasks.speculative.execution=false -D mapred.compress.map.output=true"
 
- # check that hadoop can be found on the path 
+# check that hadoop can be found on the path 
 if [ $mode = "distributed" ]; then
  if [ $(which hadoop | wc -l ) -eq 0 ]; then
     echo "Can't find Hadoop executable. Add HADOOP_HOME/bin to the path or run in local mode."
@@ -168,11 +174,31 @@ do
   
   echo "Operating on segment : $SEGMENT"
 
+  # starts selenium grid in all nodes in file nodes.txt
+  if $selenium; then
+    echo "Starting selenium grid ..."
+    for HOST in $(cat "${bin}/../../selenium-grid/nodes.txt" );
+    do
+        echo $HOST "found";
+        ssh $HOST "start-grid.sh 10" ;
+    done
+  fi
+  
   # fetching the segment
   echo "Fetching : $SEGMENT"
   # enable parse during fetch
   #__bin_nutch fetch $commonOptions -D fetcher.timelimit.mins=$timeLimitFetch "$CRAWL_PATH"/segments/$SEGMENT -noParsing -threads $numThreads
    __bin_nutch fetch $commonOptions -D fetcher.timelimit.mins=$timeLimitFetch "$CRAWL_PATH"/segments/$SEGMENT -threads $numThreads
+
+  # stop selenium grid in all nodes in file nodes.txt after fetch  
+  if $selenium; then
+    echo "Stopping selenium grid ..."
+    for HOST in $(cat "${bin}/../../selenium-grid/nodes.txt" );
+    do
+        echo $HOST "found";
+        ssh $HOST "stop-grid.sh";
+    done
+  fi
 
   # parsing the segment
   # echo "Parsing : $SEGMENT"
