@@ -15,10 +15,10 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<project name="Nutch" default="deploy-core" basedir="../../plugin">
+<project name="Nutch" default="deploy-core" basedir=".">
 
   <target name="deploy-core">
-    <ant target="compile-core" inheritall="false" dir="../../../../../"/>
+    <ant target="compile-core" inheritall="false" dir="../.."/>
     <ant target="deploy"/>
   </target>
 
@@ -33,30 +33,29 @@
      <ant dir="index-anchor" target="deploy"/>
      <ant dir="index-geoip" target="deploy"/>
      <ant dir="index-more" target="deploy"/>
+     <ant dir="index-replace" target="deploy"/>
      <ant dir="index-static" target="deploy"/>
      <ant dir="index-metadata" target="deploy"/>
-     <ant dir="index-multipage" target="deploy"/>
-     <ant dir="index-sm" target="deploy"/>
+     <ant dir="index-links" target="deploy"/>
      <ant dir="mimetype-filter" target="deploy"/>
+     <ant dir="indexer-cloudsearch" target="deploy"/>
      <ant dir="indexer-dummy" target="deploy"/>
      <ant dir="indexer-elastic" target="deploy"/>
-     <ant dir="indexer-sm-elastic-2" target="deploy"/>
      <ant dir="indexer-solr" target="deploy"/>
      <ant dir="language-identifier" target="deploy"/>
      <ant dir="lib-http" target="deploy"/>
      <ant dir="lib-nekohtml" target="deploy"/>
      <ant dir="lib-regex-filter" target="deploy"/>
      <ant dir="lib-xml" target="deploy"/>
-     <ant dir="lib-sm" target="deploy"/>
      <ant dir="microformats-reltag" target="deploy"/>
      <ant dir="nutch-extensionpoints" target="deploy"/>
      <ant dir="protocol-file" target="deploy"/>
      <ant dir="protocol-ftp" target="deploy"/>
      <ant dir="protocol-http" target="deploy"/>
      <ant dir="protocol-httpclient" target="deploy"/>
-     <ant dir="protocol-sm" target="deploy"/>
      <ant dir="lib-selenium" target="deploy"/>
      <ant dir="protocol-selenium" target="deploy" />
+     <ant dir="protocol-interactiveselenium" target="deploy" />
      <ant dir="parse-ext" target="deploy"/>
      <ant dir="parse-js" target="deploy"/>
      <ant dir="parse-html" target="deploy"/>
@@ -64,10 +63,10 @@
      <ant dir="parse-swf" target="deploy"/>
      <ant dir="parse-tika" target="deploy"/>
      <ant dir="parse-zip" target="deploy"/>
-     <ant dir="parse-sm" target="deploy"/>
      <ant dir="scoring-depth" target="deploy"/>
      <ant dir="scoring-opic" target="deploy"/>
      <ant dir="scoring-link" target="deploy"/>
+     <ant dir="scoring-similarity" target="deploy"/>
      <ant dir="subcollection" target="deploy"/>
      <ant dir="tld" target="deploy"/>
      <ant dir="urlfilter-automaton" target="deploy"/>
@@ -77,6 +76,7 @@
      <ant dir="urlfilter-regex" target="deploy"/>
      <ant dir="urlfilter-suffix" target="deploy"/>
      <ant dir="urlfilter-validator" target="deploy"/>
+     <ant dir="parsefilter-naivebayes" target="deploy"/>
      <ant dir="urlmeta" target="deploy"/>
      <ant dir="urlnormalizer-ajax" target="deploy"/>
      <ant dir="urlnormalizer-basic" target="deploy"/>
@@ -98,11 +98,11 @@
      <ant dir="index-geoip" target="test"/>
      <ant dir="index-more" target="test"/>
      <ant dir="index-static" target="test"/>
-     <ant dir="index-multipage" target="test"/>
+     <ant dir="index-replace" target="test"/>
+     <ant dir="index-links" target="test"/>
      <ant dir="mimetype-filter" target="test"/>
      <ant dir="language-identifier" target="test"/>
      <ant dir="lib-http" target="test"/>
-     <ant dir="lib-sm" target="test"/>
      <ant dir="protocol-file" target="test"/>
      <ant dir="protocol-http" target="test"/>
      <ant dir="protocol-httpclient" target="test"/>
@@ -143,13 +143,13 @@
     <ant dir="index-geoip" target="clean"/>
     <ant dir="index-more" target="clean"/>
     <ant dir="index-static" target="clean"/>
+    <ant dir="index-replace" target="clean"/>
     <ant dir="index-metadata" target="clean"/>
-    <ant dir="index-multipage" target="clean"/>
-    <ant dir="index-sm" target="clean"/>
+    <ant dir="index-links" target="clean"/>
     <ant dir="mimetype-filter" target="clean"/>
+    <ant dir="indexer-cloudsearch" target="clean"/>
     <ant dir="indexer-dummy" target="clean"/>
     <ant dir="indexer-elastic" target="clean"/>
-    <ant dir="indexer-sm-elastic-2" target="clean"/>
     <ant dir="indexer-solr" target="clean"/>
     <ant dir="language-identifier" target="clean"/>
     <!-- <ant dir="lib-commons-httpclient" target="clean"/> -->
@@ -158,16 +158,15 @@
     <ant dir="lib-nekohtml" target="clean"/>
     <ant dir="lib-regex-filter" target="clean"/>
     <ant dir="lib-xml" target="clean"/>
-    <ant dir="lib-sm" target="clean"/>
     <ant dir="microformats-reltag" target="clean"/>
     <ant dir="nutch-extensionpoints" target="clean"/>
     <ant dir="protocol-file" target="clean"/>
     <ant dir="protocol-ftp" target="clean"/>
     <ant dir="protocol-http" target="clean"/>
     <ant dir="protocol-httpclient" target="clean"/>
-    <ant dir="protocol-sm" target="clean"/>
     <ant dir="lib-selenium" target="clean"/>
     <ant dir="protocol-selenium" target="clean" />
+    <ant dir="protocol-interactiveselenium" target="clean" />
     <ant dir="parse-ext" target="clean"/>
     <ant dir="parse-js" target="clean"/>
     <ant dir="parse-html" target="clean"/>
@@ -175,10 +174,10 @@
     <ant dir="parse-swf" target="clean"/>
     <ant dir="parse-tika" target="clean"/>
     <ant dir="parse-zip" target="clean"/>
-    <ant dir="parse-sm" target="clean"/>
     <ant dir="scoring-depth" target="clean"/>
     <ant dir="scoring-opic" target="clean"/>
     <ant dir="scoring-link" target="clean"/>
+    <ant dir="scoring-similarity" target="clean"/>
     <ant dir="subcollection" target="clean"/>
     <ant dir="tld" target="clean"/>
     <ant dir="urlfilter-automaton" target="clean"/>
@@ -188,6 +187,7 @@
     <ant dir="urlfilter-regex" target="clean"/>
     <ant dir="urlfilter-suffix" target="clean"/>
     <ant dir="urlfilter-validator" target="clean"/>
+    <ant dir="parsefilter-naivebayes" target="clean" />
     <ant dir="urlmeta" target="clean"/>
     <ant dir="urlnormalizer-ajax" target="clean"/>
     <ant dir="urlnormalizer-basic" target="clean"/>
