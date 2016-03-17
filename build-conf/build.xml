@@ -22,6 +22,11 @@
   <property file="${user.home}/build.properties" />
   <property file="${basedir}/build.properties" />
   <property file="${basedir}/default.properties" />
+  
+  <!-- wonutch -->
+  <property name="test.junit.output.format" value="plain"/>
+  <!-- wonutch -->
+  
   <property name="release.dir" value="${build.dir}/release"/>
   
   <!-- define Maven coordinates, repository url and artifacts name etc -->
@@ -227,7 +232,18 @@
       <packageset dir="${plugins.dir}/urlnormalizer-querystring/src/java"/>
       <packageset dir="${plugins.dir}/urlnormalizer-regex/src/java"/>
       <packageset dir="${plugins.dir}/urlnormalizer-slash/src/java"/>
-
+      
+      <!-- wonutch -->
+      <packageset dir="${plugins.dir}/lib-sm/src/java"/>
+      <packageset dir="${plugins.dir}/index-sm/src/java"/>
+      <packageset dir="${plugins.dir}/index-multipage/src/java"/>
+      <packageset dir="${plugins.dir}/indexer-sm-elastic-2/src/java"/>
+      <packageset dir="${plugins.dir}/parse-sm/src/java"/>
+      <packageset dir="${plugins.dir}/parse-fb/src/java"/>
+      <packageset dir="${plugins.dir}/protocol-sm/src/java"/>
+      <packageset dir="${plugins.dir}/protocol-sm-selenium/src/java"/>	  
+      <!-- wonutch -->
+      
       <link href="${javadoc.link.java}"/>
       <link href="${javadoc.link.lucene}"/>
       <link href="${javadoc.link.hadoop}"/>
@@ -663,7 +679,18 @@
       <packageset dir="${plugins.dir}/urlnormalizer-querystring/src/java"/>
       <packageset dir="${plugins.dir}/urlnormalizer-regex/src/java"/>
       <packageset dir="${plugins.dir}/urlnormalizer-slash/src/java"/>
-
+      
+      <!-- wonutch -->
+      <packageset dir="${plugins.dir}/lib-sm/src/java"/>
+      <packageset dir="${plugins.dir}/index-sm/src/java"/>
+      <packageset dir="${plugins.dir}/index-multipage/src/java"/>
+      <packageset dir="${plugins.dir}/indexer-sm-elastic-2/src/java"/>
+      <packageset dir="${plugins.dir}/parse-sm/src/java"/>
+      <packageset dir="${plugins.dir}/parse-fb/src/java"/>
+      <packageset dir="${plugins.dir}/protocol-sm/src/java"/>
+      <packageset dir="${plugins.dir}/protocol-sm-selenium/src/java"/>	  
+      <!-- wonutch -->
+      
       <link href="${javadoc.link.java}"/>
       <link href="${javadoc.link.lucene}"/>
       <link href="${javadoc.link.hadoop}"/>
@@ -1088,7 +1115,33 @@
         <source path="${plugins.dir}/urlnormalizer-regex/src/test/" />
         <source path="${plugins.dir}/urlnormalizer-slash/src/java/" />
         <source path="${plugins.dir}/urlnormalizer-slash/src/test/" />
-
+        
+        <!-- wonutch -->
+        <source path="${plugins.dir}/lib-sm/src/java"/>
+        <source path="${plugins.dir}/lib-sm/src/test"/>
+        
+        <source path="${plugins.dir}/index-sm/src/java"/>
+        <source path="${plugins.dir}/index-sm/src/test"/>
+        
+        <source path="${plugins.dir}/index-multipage/src/java"/>
+        <source path="${plugins.dir}/index-multipage/src/test"/>
+        
+        <source path="${plugins.dir}/indexer-sm-elastic-2/src/java"/>
+        <source path="${plugins.dir}/indexer-sm-elastic-2/src/test"/>
+        
+        <source path="${plugins.dir}/parse-sm/src/java"/>
+        <source path="${plugins.dir}/parse-sm/src/test"/>
+        
+        <source path="${plugins.dir}/parse-fb/src/java"/>
+        <source path="${plugins.dir}/parse-fb/src/test"/>
+        
+        <source path="${plugins.dir}/protocol-sm/src/java"/>
+        <source path="${plugins.dir}/protocol-sm/src/test"/>
+        
+        <source path="${plugins.dir}/protocol-sm-selenium/src/java"/>	  
+        <source path="${plugins.dir}/protocol-sm-selenium/src/test"/>	  
+        <!-- wonutch -->
+        
         <output path="${build.classes}" />
       </classpath>
     </eclipse>

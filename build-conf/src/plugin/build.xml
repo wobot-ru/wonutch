@@ -85,6 +85,17 @@
      <ant dir="urlnormalizer-querystring" target="deploy"/>
      <ant dir="urlnormalizer-regex" target="deploy"/>
      <ant dir="urlnormalizer-slash" target="deploy"/>
+     
+     <!-- wonutch -->
+     <ant dir="lib-sm" target="deploy"/>
+     <ant dir="index-sm" target="deploy"/>
+     <ant dir="index-multipage" target="deploy"/>
+     <ant dir="indexer-sm-elastic-2" target="deploy"/>
+     <ant dir="parse-sm" target="deploy"/>
+     <ant dir="parse-fb" target="deploy"/>
+     <ant dir="protocol-sm" target="deploy"/>
+     <ant dir="protocol-sm-selenium" target="deploy"/>
+     <!-- wonutch -->
   </target>
 
   <!-- ====================================================== -->
@@ -128,6 +139,17 @@
      <ant dir="urlnormalizer-querystring" target="test"/>
      <ant dir="urlnormalizer-regex" target="test"/>
      <ant dir="urlnormalizer-slash" target="test"/>
+     
+     <!-- wonutch -->
+     <ant dir="lib-sm" target="test"/>
+     <ant dir="index-sm" target="test"/>
+     <ant dir="index-multipage" target="test"/>
+     <ant dir="indexer-sm-elastic-2" target="test"/>
+     <ant dir="parse-sm" target="test"/>
+     <ant dir="parse-fb" target="test"/>
+     <ant dir="protocol-sm" target="test"/>
+     <ant dir="protocol-sm-selenium" target="test"/>
+     <!-- wonutch -->
     </parallel>
   </target>
 
@@ -196,5 +218,16 @@
     <ant dir="urlnormalizer-querystring" target="clean"/>
     <ant dir="urlnormalizer-regex" target="clean"/>
     <ant dir="urlnormalizer-slash" target="clean"/>
-  </target>
+    
+    <!-- wonutch -->
+    <ant dir="lib-sm" target="clean"/>
+    <ant dir="index-sm" target="clean"/>
+    <ant dir="index-multipage" target="clean"/>
+    <ant dir="indexer-sm-elastic-2" target="clean"/>
+    <ant dir="parse-sm" target="clean"/>
+    <ant dir="parse-fb" target="clean"/>
+    <ant dir="protocol-sm" target="clean"/>
+    <ant dir="protocol-sm-selenium" target="clean"/>
+    <!-- wonutch -->
+	</target>
 </project>
