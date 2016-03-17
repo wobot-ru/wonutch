@@ -177,10 +177,13 @@ do
   # starts selenium grid in all nodes in file nodes.txt
   if $selenium; then
     echo "Starting selenium grid ..."
-    for HOST in $(cat "${bin}/../../selenium-grid/nodes.txt" );
+    
+    # this host
+    "${bin}/../../selenium-grid/start-grid.sh" "10" 
+    for HOST in $(cat "${bin}/../../selenium-grid/nodes.txt" )
     do
         echo $HOST "found";
-        ssh $HOST "start-grid.sh 10" ;
+        ssh $HOST "$NUTCH_HOME/selenium-grid/start-grid.sh 10" 
     done
   fi
   
@@ -193,10 +196,13 @@ do
   # stop selenium grid in all nodes in file nodes.txt after fetch  
   if $selenium; then
     echo "Stopping selenium grid ..."
-    for HOST in $(cat "${bin}/../../selenium-grid/nodes.txt" );
+
+    # this host
+    "${bin}/../../selenium-grid/stop-grid.sh" 
+    for HOST in $(cat "${bin}/../../selenium-grid/nodes.txt" )
     do
         echo $HOST "found";
-        ssh $HOST "stop-grid.sh";
+        ssh $HOST "$NUTCH_HOME/selenium-grid/stop-grid.sh"
     done
   fi
 
