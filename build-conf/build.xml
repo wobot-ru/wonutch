@@ -104,6 +104,7 @@
      source="${javac.version}"
      deprecation="${javac.deprecation}">
       <compilerarg value="-Xlint:-path"/>
+      <compilerarg value="-Xlint:unchecked"/>
       <classpath refid="classpath"/>
     </javac>
     <copy todir="${build.classes}">
@@ -420,6 +421,7 @@
      source="${javac.version}"
      deprecation="${javac.deprecation}">
       <compilerarg value="-Xlint:-path"/>
+      <compilerarg value="-Xlint:unchecked"/>
       <classpath refid="test.classpath"/>
     </javac>    
   </target>
