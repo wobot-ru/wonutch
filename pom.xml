@@ -49,7 +49,6 @@
                         </goals>
                         <configuration>
                             <target>
-								<ant dir="${project.basedir}/nutch" target="runtime"/>
                                 <copy file="build-conf/build.xml" overwrite="true" todir="nutch/"/>
                                 <copy todir="nutch/src/plugin">
                                     <fileset dir="wonutch-plugins/plugins">
