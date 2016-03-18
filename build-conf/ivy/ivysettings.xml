@@ -35,7 +35,7 @@
     value="https://repository.apache.org/content/repositories/snapshots/"
     override="false"/>
   <property name="snapshots.wobot.local"
-    value="http://artifactory.wobot.local/artifactory/libs-snapshot"
+    value="http://artifactory.wobot.local/artifactory/libs-snapshot-local"
     override="false"/>
   <property name="release.wobot.local"
     value="http://artifactory.wobot.local/artifactory/libs-release-local"
