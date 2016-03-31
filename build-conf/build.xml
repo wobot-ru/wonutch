@@ -241,7 +241,6 @@
       <packageset dir="${plugins.dir}/parse-sm/src/java"/>
       <packageset dir="${plugins.dir}/parse-fb/src/java"/>
       <packageset dir="${plugins.dir}/protocol-sm/src/java"/>
-      <packageset dir="${plugins.dir}/protocol-sm-selenium/src/java"/>	  
       <!-- wonutch -->
       
       <link href="${javadoc.link.java}"/>
@@ -689,7 +688,6 @@
       <packageset dir="${plugins.dir}/parse-sm/src/java"/>
       <packageset dir="${plugins.dir}/parse-fb/src/java"/>
       <packageset dir="${plugins.dir}/protocol-sm/src/java"/>
-      <packageset dir="${plugins.dir}/protocol-sm-selenium/src/java"/>	  
       <!-- wonutch -->
       
       <link href="${javadoc.link.java}"/>
@@ -1139,8 +1137,6 @@
         <source path="${plugins.dir}/protocol-sm/src/java"/>
         <source path="${plugins.dir}/protocol-sm/src/test"/>
         
-        <source path="${plugins.dir}/protocol-sm-selenium/src/java"/>	  
-        <source path="${plugins.dir}/protocol-sm-selenium/src/test"/>	  
         <!-- wonutch -->
         
         <output path="${build.classes}" />

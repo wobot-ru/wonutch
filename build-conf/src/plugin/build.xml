@@ -94,7 +94,6 @@
      <ant dir="parse-sm" target="deploy"/>
      <ant dir="parse-fb" target="deploy"/>
      <ant dir="protocol-sm" target="deploy"/>
-     <ant dir="protocol-sm-selenium" target="deploy"/>
      <!-- wonutch -->
   </target>
 
@@ -148,7 +147,6 @@
      <ant dir="parse-sm" target="test"/>
      <ant dir="parse-fb" target="test"/>
      <ant dir="protocol-sm" target="test"/>
-     <ant dir="protocol-sm-selenium" target="test"/>
      <!-- wonutch -->
      
     </parallel>
@@ -228,7 +226,6 @@
     <ant dir="parse-sm" target="clean"/>
     <ant dir="parse-fb" target="clean"/>
     <ant dir="protocol-sm" target="clean"/>
-    <ant dir="protocol-sm-selenium" target="clean"/>
     <!-- wonutch -->
     
   </target>
