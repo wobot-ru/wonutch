@@ -1,0 +1,10 @@
+<configuration>
+    <property>
+        <name>hbase.zookeeper.quorum</name>
+        <value>hdp-01,hdp-03,hdp-02</value>
+    </property>
+    <property>
+        <name>zookeeper.znode.parent</name>
+        <value>/hbase-unsecure</value>
+    </property>
+</configuration>
