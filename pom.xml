@@ -88,6 +88,6 @@
 
     <modules>
         <module>wonutch-plugins</module>
-        <module>hbase-indexer</module>
+        <module>segment-to-hbase</module>
     </modules>
 </project>
