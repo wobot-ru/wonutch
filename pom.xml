@@ -88,6 +88,6 @@
 
     <modules>
         <module>wonutch-plugins</module>
-        <module>hbase-indexer</module>
+        <module>wn-index</module>
     </modules>
 </project>
