@@ -49,6 +49,7 @@ public class IndexRunner {
         FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new ProfileMapper());
         GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple2<Text, Mutation>> result = flatMap.groupBy(0).reduceGroup(new ProfileReducer());
         result.output(new HadoopOutputFormat<Text, Mutation>(new TableOutputFormat<Text>(), job));
+        //System.out.println("Total Profiles imported: " + result.count());
         env.execute("Import profiles to HBase(in sink)");
     }
 

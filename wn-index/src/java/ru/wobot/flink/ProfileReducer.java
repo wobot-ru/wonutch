@@ -33,15 +33,11 @@ public class ProfileReducer implements org.apache.flink.api.common.functions.Gro
         for (Tuple2<Text, NutchWritable> iter : values) {
             key = iter.f0;
             final Writable value = iter.f1.get(); // unwrap
-            if (value instanceof Inlinks) {
-            } else if (value instanceof CrawlDatum) {
+            if (value instanceof CrawlDatum) {
                 final CrawlDatum datum = (CrawlDatum) value;
-                if (CrawlDatum.hasDbStatus(datum)) {
-                } else if (CrawlDatum.hasFetchStatus(datum)) {
+                if (CrawlDatum.hasFetchStatus(datum) && datum.getStatus() != CrawlDatum.STATUS_FETCH_NOTMODIFIED) {
                     // don't index unmodified (empty) pages
-                    if (datum.getStatus() != CrawlDatum.STATUS_FETCH_NOTMODIFIED) {
-                        fetchDatum = datum;
-                    }
+                    fetchDatum = datum;
                 } else if (CrawlDatum.STATUS_LINKED == datum.getStatus()
                         || CrawlDatum.STATUS_SIGNATURE == datum.getStatus()
                         || CrawlDatum.STATUS_PARSE_META == datum.getStatus()) {
@@ -51,9 +47,7 @@ public class ProfileReducer implements org.apache.flink.api.common.functions.Gro
                 }
             } else if (value instanceof ParseData) {
                 parseData = (ParseData) value;
-            } else if (value instanceof ParseText) {
-            } else if (value instanceof Content) {
-            } else if (LOG.isWarnEnabled()) {
+            } else if (LOG.isWarnEnabled() && (!(value instanceof ParseText) || (value instanceof Content) || (value instanceof Inlinks))) {
                 LOG.warn("Unrecognized type: " + value.getClass());
             }
         }
