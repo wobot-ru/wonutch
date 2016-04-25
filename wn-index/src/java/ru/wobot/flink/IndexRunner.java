@@ -1,11 +1,17 @@
 package ru.wobot.flink;
 
+import org.apache.commons.collections.MapUtils;
+import org.apache.flink.api.common.functions.FilterFunction;
+import org.apache.flink.api.common.functions.FlatJoinFunction;
+import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.api.java.functions.GroupReduceIterator;
 import org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat;
-import org.apache.flink.api.java.operators.DataSource;
-import org.apache.flink.api.java.operators.FlatMapOperator;
-import org.apache.flink.api.java.operators.GroupReduceOperator;
+import org.apache.flink.api.java.operators.*;
+import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.util.Collector;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -23,8 +29,11 @@ import org.apache.nutch.segment.SegmentChecker;
 import org.apache.nutch.util.HadoopFSUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.wobot.sm.core.mapping.PostProperties;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.Map;
 
 public class IndexRunner {
     public static final Logger LOG = LoggerFactory
@@ -36,36 +45,50 @@ public class IndexRunner {
             throw new RuntimeException();
         }
 
+        long startTime = System.currentTimeMillis();
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         final Job profileMapJob = Job.getInstance();
-        profileMapJob.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, HBaseConstants.PROFILE_TABLE_NAME);
+        //profileMapJob.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, HBaseConstants.PROFILE_TABLE_NAME);
         profileMapJob.getConfiguration().set("mapreduce.output.fileoutputformat.outputdir", HBaseConstants.TMP_DIR);
 
         addFiles(profileMapJob, args);
 
         DataSource<Tuple2<Text, Writable>> input = env.createInput(new HadoopInputFormat<Text, Writable>(new SequenceFileInputFormat<Text, Writable>(), Text.class, Writable.class, profileMapJob));
-        FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new ProfileMapper());
-        //GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple2<Text, Mutation>> profiles = flatMap.groupBy(0).reduceGroup(new ProfileToHbaseReducer());
-        GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple2<Text, Profile>> profiles = flatMap.groupBy(0).reduceGroup(new ProfileReducer());
+        FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new NutchWritableMapper());
 
-        //profiles.output(new HadoopOutputFormat<Text, Mutation>(new TableOutputFormat<Text>(), profileMapJob));
 
-        final Job postMapJob = Job.getInstance();
-        postMapJob.getConfiguration().set("mapreduce.output.fileoutputformat.outputdir", HBaseConstants.TMP_DIR);
+        final GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple3<IndexableType, Text, Map<String, String>>> reduceGroup = flatMap.groupBy(0).reduceGroup(new NutchWritableReducer2());
+        final ProjectOperator<?, Tuple2<Text, Map<String, String>>> posts = reduceGroup.filter(new FilterFunction<Tuple3<IndexableType, Text, Map<String, String>>>() {
+            public boolean filter(Tuple3<IndexableType, Text, Map<String, String>> value) throws Exception {
+                return value.f0.equals(IndexableType.POST);
+            }
+        }).project(1, 2);
 
-        addFiles(postMapJob, args);
+        final ProjectOperator<?, Tuple2<Text, Map<String, String>>> profiles = reduceGroup.filter(new FilterFunction<Tuple3<IndexableType, Text, Map<String, String>>>() {
+            public boolean filter(Tuple3<IndexableType, Text, Map<String, String>> value) throws Exception {
+                return value.f0.equals(IndexableType.PROFILE);
+            }
+        }).project(1, 2);
 
-        DataSource<Tuple2<Text, Writable>> inputPost = env.createInput(new HadoopInputFormat<Text, Writable>(new SequenceFileInputFormat<Text, Writable>(), Text.class, Writable.class, postMapJob));
-        FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatPost = inputPost.flatMap(new PostMapper());
-        GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple2<Text, Post>> posts = flatPost.groupBy(0).reduceGroup(new PostReducer());
 
-        //posts.joinWithHuge(profiles).where(0).equalTo(0).with()
-        //posts.join(profiles).where("profileId").equalTo("id").with(new MyWeighter());
+        FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Map<String, String>>, Tuple2<Text, Post>> join = new FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Map<String, String>>, Tuple2<Text, Post>>() {
+            public void join(Tuple2<Text, Map<String, String>> postTuple, Tuple2<Text, Map<String, String>> profileTuple, Collector<Tuple2<Text, Post>> out) throws Exception {
+                final Map<String, String> postProp = postTuple.f1;
+                final Map<String, String> profileProp = profileTuple.f1;
 
-        final long totalProfiles = profiles.count();
-        final long totalPosts = posts.count();
-        System.out.println("Total profiles imported: " + totalProfiles);
-        System.out.println("Total posts imported: " + totalPosts);
+                final Post post = new Post();
+                post.id = postProp.get(PostProperties.ID);
+                post.profileId = postProp.get(PostProperties.PROFILE_ID);
+
+                out.collect(Tuple2.of(new Text(post.id), post));
+            }
+        };
+        DataSet<Tuple2<Text, Post>> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
+        final long totalDenorm = denorm.count();
+        System.out.println("Total denorm imported: " + totalDenorm);
+        Long stopTime = System.currentTimeMillis();
+        long elapsedTime = stopTime - startTime;
+        System.out.println("elapsedTime=" + elapsedTime);
         //posts.print();
         //env.execute("Import profiles to HBase(in sink)");
     }

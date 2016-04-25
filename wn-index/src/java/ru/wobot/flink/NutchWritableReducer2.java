@@ -2,32 +2,33 @@ package ru.wobot.flink;
 
 import com.google.gson.GsonBuilder;
 import org.apache.flink.api.java.tuple.Tuple2;
+import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.util.Collector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.nutch.crawl.CrawlDatum;
-import org.apache.nutch.crawl.Inlinks;
 import org.apache.nutch.crawl.NutchWritable;
 import org.apache.nutch.metadata.Metadata;
 import org.apache.nutch.metadata.Nutch;
 import org.apache.nutch.parse.ParseData;
 import org.apache.nutch.parse.ParseText;
-import org.apache.nutch.protocol.Content;
 import org.apache.nutch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.wobot.sm.core.api.VkApiTypes;
 import ru.wobot.sm.core.mapping.PostProperties;
+import ru.wobot.sm.core.mapping.ProfileProperties;
 import ru.wobot.sm.core.meta.ContentMetaConstants;
 import ru.wobot.sm.core.parse.ParseResult;
 
+import java.util.HashMap;
 import java.util.Map;
 
-public class PostReducer implements org.apache.flink.api.common.functions.GroupReduceFunction<org.apache.flink.api.java.tuple.Tuple2<org.apache.hadoop.io.Text, org.apache.nutch.crawl.NutchWritable>, org.apache.flink.api.java.tuple.Tuple2<Text, Post>> {
+public class NutchWritableReducer2 implements org.apache.flink.api.common.functions.GroupReduceFunction<org.apache.flink.api.java.tuple.Tuple2<org.apache.hadoop.io.Text, org.apache.nutch.crawl.NutchWritable>, org.apache.flink.api.java.tuple.Tuple3<IndexableType, org.apache.hadoop.io.Text, java.util.Map<String, String>>> {
     public static final Logger LOG = LoggerFactory
-            .getLogger(PostReducer.class);
+            .getLogger(NutchWritableReducer2.class);
 
-    public void reduce(Iterable<Tuple2<Text, NutchWritable>> values, Collector<Tuple2<Text, Post>> out) throws Exception {
+    public void reduce(Iterable<Tuple2<Text, NutchWritable>> values, Collector<Tuple3<IndexableType, Text, Map<String, String>>> out) throws Exception {
         Text key = null;
         CrawlDatum fetchDatum = null;
         ParseData parseData = null;
@@ -40,19 +41,14 @@ public class PostReducer implements org.apache.flink.api.common.functions.GroupR
                 if (CrawlDatum.hasFetchStatus(datum) && datum.getStatus() != CrawlDatum.STATUS_FETCH_NOTMODIFIED) {
                     // don't index unmodified (empty) pages
                     fetchDatum = datum;
-                } else if (CrawlDatum.STATUS_LINKED == datum.getStatus()
-                        || CrawlDatum.STATUS_SIGNATURE == datum.getStatus()
-                        || CrawlDatum.STATUS_PARSE_META == datum.getStatus()) {
-                    continue;
                 } else {
+                    LOG.error("Unexpected status: " + datum.getStatus());
                     throw new RuntimeException("Unexpected status: " + datum.getStatus());
                 }
             } else if (value instanceof ParseData) {
                 parseData = (ParseData) value;
             } else if (value instanceof ParseText) {
                 parseText = (ParseText) value;
-            } else if (LOG.isWarnEnabled() && (!(value instanceof ParseText) || (value instanceof Content) || (value instanceof Inlinks))) {
-                LOG.warn("Unrecognized type: " + value.getClass());
             }
         }
 
@@ -71,24 +67,16 @@ public class PostReducer implements org.apache.flink.api.common.functions.GroupR
                 && metadata.get(ContentMetaConstants.SKIP_FROM_ELASTIC_INDEX).equals("1"))
             return;
 
-        // skip any non profile documents
-        if (metadata.get(ContentMetaConstants.API_TYPE) != null
-                && !(metadata.get(ContentMetaConstants.API_TYPE).equals(VkApiTypes.POST)
-                || metadata.get(ContentMetaConstants.API_TYPE).equals(VkApiTypes.POST_BULK)
-                || metadata.get(ContentMetaConstants.API_TYPE).equals(VkApiTypes.COMMENT_BULK)))
-            return;
+
+        final Map<String, String> hashMap = new HashMap<String, String>() {{
+            put(Nutch.SEGMENT_NAME_KEY, metadata.get(Nutch.SEGMENT_NAME_KEY));
+            put(Nutch.SIGNATURE_KEY, metadata.get(Nutch.SIGNATURE_KEY));
+        }};
 
         final boolean isSingleDoc = !"true".equals(metadata.get(ContentMetaConstants.MULTIPLE_PARSE_RESULT));
-        if (isSingleDoc && metadata.get(ContentMetaConstants.API_TYPE).equals(VkApiTypes.POST)) {
-            Post post = new Post();
-            post.setId(key.toString());
-            post.setSegment(metadata.get(Nutch.SEGMENT_NAME_KEY));
-            post.setDigest(metadata.get(Nutch.SIGNATURE_KEY));
 
-            Tuple2<Text, Post> reuse = new Tuple2<Text, Post>();
-            reuse.f0 = key;
-            reuse.f1 = post;
-            out.collect(reuse);
+        if (isSingleDoc) {
+            out.collect(Tuple3.of(IndexableType.PROFILE, key, hashMap));
         } else {
             if (parseText != null && !StringUtil.isEmpty(parseText.getText())) {
                 ParseResult[] parseResults = fromJson(parseText.getText(), ParseResult[].class);
@@ -98,25 +86,24 @@ public class PostReducer implements org.apache.flink.api.common.functions.GroupR
                         subType = parseData.getContentMeta().get(ContentMetaConstants.TYPE);
                     }
                     if (subType.equals(VkApiTypes.POST)) {
-                        Post post = new Post();
-                        post.setId(parseResult.getUrl());
-                        post.setSegment(metadata.get(Nutch.SEGMENT_NAME_KEY));
-
                         final Map<String, Object> parseMeta = parseResult.getParseMeta();
-                        post.setProfileId((String) parseMeta.get(PostProperties.PROFILE_ID));
-                        Tuple2<Text, Post> reuse = new Tuple2<Text, Post>();
-                        reuse.f0 = new Text(post.getProfileId());
-                        reuse.f1 = post;
-                        out.collect(reuse);
+                        final String profileId = (String) parseMeta.get(PostProperties.PROFILE_ID);
+                        hashMap.put(PostProperties.PROFILE_ID, profileId);
+                        hashMap.put(PostProperties.ID, parseResult.getUrl());
+
+                        out.collect(Tuple3.of(IndexableType.POST, new Text(profileId), hashMap));
                     }
                 }
             }
         }
+
     }
+
 
     private static <T> T fromJson(String json, Class<T> classOfT) {
         return new GsonBuilder()
                 .create()
                 .fromJson(json, classOfT);
     }
+
 }

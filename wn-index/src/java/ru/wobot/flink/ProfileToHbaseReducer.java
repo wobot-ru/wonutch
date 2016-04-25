@@ -21,6 +21,7 @@ import org.apache.nutch.protocol.Content;
 import org.apache.nutch.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.wobot.sm.core.mapping.ProfileProperties;
 
 public class ProfileToHbaseReducer implements org.apache.flink.api.common.functions.GroupReduceFunction<org.apache.flink.api.java.tuple.Tuple2<org.apache.hadoop.io.Text, org.apache.nutch.crawl.NutchWritable>, org.apache.flink.api.java.tuple.Tuple2<org.apache.hadoop.io.Text, org.apache.hadoop.hbase.client.Mutation>> {
     public static final Logger LOG = LoggerFactory
