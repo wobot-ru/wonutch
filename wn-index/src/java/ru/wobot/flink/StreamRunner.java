@@ -37,6 +37,34 @@ public class StreamRunner {
 
     private static void run(String[] args) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
+
+        final DataStreamSource<Long> input  = env.generateSequence(0, 100);
+        Map<String, String> config = new HashMap<String, String>();
+        //config.put("bulk.flush.max.actions", "1");
+        config.put("cluster.name", "kviz-es");
+
+        List<InetSocketAddress> transports = new ArrayList<InetSocketAddress>();
+        transports.add(new InetSocketAddress(InetAddress.getByName("192.168.1.101"), 9300));
+
+
+        input.addSink(new ElasticsearchSink<Long>(config, new IndexRequestBuilder<Long>() {
+            public IndexRequest createIndexRequest(Long element, RuntimeContext ctx) {
+                Map<String, Object> json = new HashMap<String, Object>();
+                json.put("data", element);
+
+                return Requests.indexRequest()
+                        .index("m")
+                        .type("my-type")
+                        .source(json)
+                        .id(String.valueOf(new Random().nextInt()));
+            }
+        }));
+
+        env.execute("Elasticsearch Example");
+    }
+
+    private static void run2(String[] args) throws Exception {
+        StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         final DataStreamSource<Long> input  = env.generateSequence(0, 100);
         Map<String, String> config = new HashMap<String, String>();
 //        config.put("bulk.flush.max.actions", "1");
