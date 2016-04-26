@@ -11,7 +11,7 @@
     </parent>
 
     <properties>
-        <flink.version>1.0.1</flink.version>
+        <flink.version>1.0.2</flink.version>
         <hbase.version>0.98.11-hadoop2</hbase.version>
         <project.build.target>1.7</project.build.target>
         <project.build.source>1.7</project.build.source>
@@ -21,7 +21,30 @@
     <artifactId>wn-index</artifactId>
     <version>0.2.0-SNAPSHOT</version>
 
+    <repositories>
+        <repository>
+            <id>sonatype-oss</id>
+            <url>http://oss.sonatype.org/content/repositories/snapshots</url>
+            <snapshots><enabled>true</enabled></snapshots>
+        </repository>
+    </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch-hadoop</artifactId>
+            <version>2.3.0</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-core_2.10</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.spark</groupId>
+                    <artifactId>spark-sql_2.10</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-core</artifactId>
@@ -30,6 +53,16 @@
         <dependency>
             <groupId>org.apache.flink</groupId>
             <artifactId>flink-java</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-streaming-java_2.11</artifactId>
+            <version>${flink.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.flink</groupId>
+            <artifactId>flink-connector-elasticsearch_2.11</artifactId>
             <version>${flink.version}</version>
         </dependency>
         <dependency>

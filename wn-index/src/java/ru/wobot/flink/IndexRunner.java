@@ -42,11 +42,11 @@ public class IndexRunner {
         long startTime = System.currentTimeMillis();
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         final Job profileMapJob = Job.getInstance();
-        //profileMapJob.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, HBaseConstants.PROFILE_TABLE_NAME);
-        profileMapJob.getConfiguration().set("mapreduce.output.fileoutputformat.outputdir", HBaseConstants.TMP_DIR);
 
         addFiles(profileMapJob, args);
 
+        //profileMapJob.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, HBaseConstants.PROFILE_TABLE_NAME);
+        profileMapJob.getConfiguration().set("mapreduce.output.fileoutputformat.outputdir", HBaseConstants.TMP_DIR);
         DataSource<Tuple2<Text, Writable>> input = env.createInput(new HadoopInputFormat<Text, Writable>(new SequenceFileInputFormat<Text, Writable>(), Text.class, Writable.class, profileMapJob));
         FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new NutchWritableMapper());
 
@@ -78,6 +78,7 @@ public class IndexRunner {
             }
         };
         DataSet<Tuple2<Text, Post>> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
+        
         final long totalDenorm = denorm.count();
         System.out.println("Total denorm imported: " + totalDenorm);
         Long stopTime = System.currentTimeMillis();
