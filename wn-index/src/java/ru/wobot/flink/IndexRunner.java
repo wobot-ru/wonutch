@@ -7,8 +7,10 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat;
 import org.apache.flink.api.java.operators.*;
+import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
+import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.connectors.elasticsearch2.ElasticsearchSink;
@@ -61,68 +63,46 @@ public class IndexRunner {
         FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new NutchWritableMapper());
 
 
-        final GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple3<IndexableType, Text, Document>> reduceGroup = flatMap.groupBy(0).reduceGroup(new NutchWritableReducer());
-        final ProjectOperator<?, Tuple2<Text, Document>> posts = reduceGroup.filter(new FilterFunction<Tuple3<IndexableType, Text, Document>>() {
-            public boolean filter(Tuple3<IndexableType, Text, Document> value) throws Exception {
-                return value.f0.equals(IndexableType.POST);
+        final GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple4<IndexableType, Text, Post, Profile>> reduceGroup = flatMap.groupBy(0).reduceGroup(new NutchWritableReducer());
+        final ProjectOperator<?, Tuple2<Text, Post>> postProj = reduceGroup.project(1, 2);
+        final FilterOperator<Tuple2<Text, Post>> posts = postProj.filter(new FilterFunction<Tuple2<Text, Post>>() {
+            public boolean filter(Tuple2<Text, Post> tuple) throws Exception {
+                return tuple.f1 != null;
             }
-        }).project(1, 2);
-
-        final ProjectOperator<?, Tuple2<Text, Document>> profiles = reduceGroup.filter(new FilterFunction<Tuple3<IndexableType, Text, Document>>() {
-            public boolean filter(Tuple3<IndexableType, Text, Document> value) throws Exception {
-                return value.f0.equals(IndexableType.PROFILE);
+        });
+        final ProjectOperator<?, Tuple2<Text, Profile>> profileProj = reduceGroup.project(1, 3);
+        final FilterOperator<Tuple2<Text, Profile>> profiles = profileProj.filter(new FilterFunction<Tuple2<Text, Profile>>() {
+            public boolean filter(Tuple2<Text, Profile> tuple) throws Exception {
+                return tuple.f1 != null;
             }
-        }).project(1, 2);
+        });
 
-
-        FlatJoinFunction<Tuple2<Text, Document>, Tuple2<Text, Document>, Document> join = new FlatJoinFunction<Tuple2<Text, Document>, Tuple2<Text, Document>, Document>() {
-            public void join(Tuple2<Text, Document> postTuple, Tuple2<Text, Document> profileTuple, Collector<Document> out) throws Exception {
-                final Post postProp = (Post) postTuple.f1;
-                final Profile profileProp = (Profile) profileTuple.f1;
+        FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, Post> join2 = new FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, Post>() {
+            public void join(Tuple2<Text, Post> postTuple, Tuple2<Text, Profile> profileTuple, Collector<Post> collector) throws Exception {
+                final Post postProp = postTuple.f1;
+                final Profile profileProp = profileTuple.f1;
 
                 final Post post = new Post();
                 post.id = postProp.id;
-                post.profileId= postProp.profileId;
-                post.body= postProp.body;
-//                post.id = postProp.get(PostProperties.ID);
-//                post.profileId = postProp.get(PostProperties.PROFILE_ID);
-//                post.body = postProp.get(PostProperties.BODY);
+                post.profileId = postProp.profileId;
+                post.body = postProp.body;
 
-                out.collect(postProp);
+                collector.collect(post);
             }
         };
-//        FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Document>, Document> join2=new FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Document>, Document>() {
-//            public void join(Tuple2<Text, Map<String, String>> postTuple, Tuple2<Text, Document> profileTuple, Collector<Document> collector) throws Exception {
-//                final Post postProp = (Post) postTuple.f1;
-//                final Profile profileProp = (Profile) profileTuple.f1;
-//
-//                final Post post = new Post();
-//                post.id = postProp.id;
-//                post.profileId= postProp.profileId;
-//                post.body= postProp.body;
-////                post.id = postProp.get(PostProperties.ID);
-////                post.profileId = postProp.get(PostProperties.PROFILE_ID);
-////                post.body = postProp.get(PostProperties.BODY);
-//
-//                collector.collect(postProp);
-//            }
-//        };
-        DataSet<Document> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
-        //denorm.print();
-        final List<Document> collect = denorm.collect();
+        DataSet<Post> denorm = posts.join(profiles).where(0).equalTo(0).with(join2);
+        final List<Post> collect = denorm.collect();
         saveToElastic(collect);
 
-        //final long totalDenorm = denorm.count();
-        //System.out.println("Total denorm imported: " + totalDenorm);
         Long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
         System.out.println("Total posts imported=" + collect.size());
         System.out.println("elapsedTime=" + elapsedTime);
     }
 
-    private static void saveToElastic(List<Document> collect) throws Exception {
+    private static void saveToElastic(List<Post> collect) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        final DataStreamSource<Document> source = env.fromCollection(collect);
+        final DataStreamSource<Post> source = env.fromCollection(collect);
         Map<String, String> config = new HashMap<String, String>();
         //config.put("bulk.flush.max.actions", "1");
         config.put("cluster.name", "kviz-es");
@@ -131,9 +111,8 @@ public class IndexRunner {
         transports.add(new InetSocketAddress(InetAddress.getByName("192.168.1.101"), 9300));
 
 
-        source.addSink(new ElasticsearchSink<Document>(config, transports, new ElasticsearchSinkFunction<Document>() {
-            public void process(Document element, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
-
+        source.addSink(new ElasticsearchSink<Post>(config, transports, new ElasticsearchSinkFunction<Post>() {
+            public void process(Post element, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
                 Map<String, Object> json = new HashMap<String, Object>();
                 //json.put("body", element.get(PostProperties.BODY));
                 json.put("body", element.segment);
