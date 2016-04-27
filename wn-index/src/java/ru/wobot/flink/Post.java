@@ -1,18 +1,11 @@
 package ru.wobot.flink;
 
-import java.util.Date;
-
-public class Post {
-    public String id;
-    public String digest;
-    public String segment;
-    public String source;
+public class Post extends Document {
     public String profileId;
-    public String href;
-    public String smPostId;
+    public long smPostId;
     public String parentPostId;
     public String body;
-    public Date date;
+    public String date;
     public int engagement;
     public Boolean isComment;
     public String authorName;

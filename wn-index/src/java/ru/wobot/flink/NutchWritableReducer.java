@@ -13,6 +13,7 @@ import org.apache.nutch.metadata.Nutch;
 import org.apache.nutch.parse.ParseData;
 import org.apache.nutch.parse.ParseText;
 import org.apache.nutch.util.StringUtil;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.wobot.sm.core.mapping.PostProperties;
@@ -21,10 +22,11 @@ import ru.wobot.sm.core.mapping.Types;
 import ru.wobot.sm.core.meta.ContentMetaConstants;
 import ru.wobot.sm.core.parse.ParseResult;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class NutchWritableReducer implements org.apache.flink.api.common.functions.GroupReduceFunction<org.apache.flink.api.java.tuple.Tuple2<org.apache.hadoop.io.Text, org.apache.nutch.crawl.NutchWritable>, org.apache.flink.api.java.tuple.Tuple3<IndexableType, org.apache.hadoop.io.Text, java.util.Map<String, String>>> {
+public class NutchWritableReducer implements org.apache.flink.api.common.functions.GroupReduceFunction<org.apache.flink.api.java.tuple.Tuple2<org.apache.hadoop.io.Text, org.apache.nutch.crawl.NutchWritable>, org.apache.flink.api.java.tuple.Tuple3<IndexableType, org.apache.hadoop.io.Text, Document>> {
 
     private static final String DIGEST = "digest";
     private static final String CRAWL_DATE = "crawl_date";
@@ -32,7 +34,7 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
     public static final Logger LOG = LoggerFactory
             .getLogger(NutchWritableReducer.class);
 
-    public void reduce(Iterable<Tuple2<Text, NutchWritable>> values, Collector<Tuple3<IndexableType, Text, Map<String, String>>> out) throws Exception {
+    public void reduce(Iterable<Tuple2<Text, NutchWritable>> values, Collector<Tuple3<IndexableType, Text, Document>> out) throws Exception {
         Text key = null;
         CrawlDatum fetchDatum = null;
         ParseData parseData = null;
@@ -83,6 +85,17 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
         if (isSingleDoc) {
             final Metadata parseMeta = parseData.getParseMeta();
             if (contentMeta.get(ContentMetaConstants.TYPE).equals(Types.PROFILE)) {
+                final Profile profile = new Profile();
+                profile.source=parseMeta.get(ProfileProperties.SOURCE);
+                profile.name=parseMeta.get(ProfileProperties.NAME);
+                profile.href=parseMeta.get(ProfileProperties.HREF);
+                profile.smProfileId=parseMeta.get(ProfileProperties.SM_PROFILE_ID);
+                profile.city=parseMeta.get(ProfileProperties.CITY);
+                profile.gender=parseMeta.get(ProfileProperties.GENDER);
+                final String reach = parseMeta.get(ProfileProperties.REACH);
+                if (!StringUtil.isEmpty(reach))
+                    profile.reach= Long.parseLong(reach);
+
                 hashMap.put(ProfileProperties.SOURCE, parseMeta.get(ProfileProperties.SOURCE));
                 hashMap.put(ProfileProperties.NAME, parseMeta.get(ProfileProperties.NAME));
                 hashMap.put(ProfileProperties.HREF, parseMeta.get(ProfileProperties.HREF));
@@ -91,7 +104,7 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
                 hashMap.put(ProfileProperties.GENDER, parseMeta.get(ProfileProperties.GENDER));
                 hashMap.put(ProfileProperties.REACH, parseMeta.get(ProfileProperties.REACH));
 
-                out.collect(Tuple3.of(IndexableType.PROFILE, key, hashMap));
+                out.collect(Tuple3.of(IndexableType.PROFILE, key, (Document) profile));
             }
         } else {
             if (parseText != null && !StringUtil.isEmpty(parseText.getText())) {
@@ -118,7 +131,17 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
                         hashMap.put(PostProperties.ENGAGEMENT, String.valueOf(engagement));
                         hashMap.put(PostProperties.PARENT_POST_ID, (String) parseMeta.get(PostProperties.PARENT_POST_ID));
                         hashMap.put(DIGEST, (String) parseResult.getContentMeta().get(DIGEST));
-                        out.collect(Tuple3.of(IndexableType.POST, new Text(profileId), hashMap));
+
+                        final Post post = new Post();
+                        post.id=parseResult.getUrl();
+                        post.source= (String) parseMeta.get(PostProperties.SOURCE);
+                        post.profileId= (String) parseMeta.get(PostProperties.PROFILE_ID);
+                        post.href= (String) parseMeta.get(PostProperties.HREF);
+                        post.smPostId= smPostId;
+                        post.body= (String) parseMeta.get(PostProperties.BODY);
+                        post.date= (String)parseMeta.get(PostProperties.POST_DATE);
+
+                        out.collect(Tuple3.of(IndexableType.POST, new Text(profileId), (Document) post));
                     }
                 }
             }

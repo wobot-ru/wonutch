@@ -61,36 +61,55 @@ public class IndexRunner {
         FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new NutchWritableMapper());
 
 
-        final GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple3<IndexableType, Text, Map<String, String>>> reduceGroup = flatMap.groupBy(0).reduceGroup(new NutchWritableReducer());
-        final ProjectOperator<?, Tuple2<Text, Map<String, String>>> posts = reduceGroup.filter(new FilterFunction<Tuple3<IndexableType, Text, Map<String, String>>>() {
-            public boolean filter(Tuple3<IndexableType, Text, Map<String, String>> value) throws Exception {
+        final GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple3<IndexableType, Text, Document>> reduceGroup = flatMap.groupBy(0).reduceGroup(new NutchWritableReducer());
+        final ProjectOperator<?, Tuple2<Text, Document>> posts = reduceGroup.filter(new FilterFunction<Tuple3<IndexableType, Text, Document>>() {
+            public boolean filter(Tuple3<IndexableType, Text, Document> value) throws Exception {
                 return value.f0.equals(IndexableType.POST);
             }
         }).project(1, 2);
 
-        final ProjectOperator<?, Tuple2<Text, Map<String, String>>> profiles = reduceGroup.filter(new FilterFunction<Tuple3<IndexableType, Text, Map<String, String>>>() {
-            public boolean filter(Tuple3<IndexableType, Text, Map<String, String>> value) throws Exception {
+        final ProjectOperator<?, Tuple2<Text, Document>> profiles = reduceGroup.filter(new FilterFunction<Tuple3<IndexableType, Text, Document>>() {
+            public boolean filter(Tuple3<IndexableType, Text, Document> value) throws Exception {
                 return value.f0.equals(IndexableType.PROFILE);
             }
         }).project(1, 2);
 
 
-        FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Map<String, String>>, Map<String, String>> join = new FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Map<String, String>>, Map<String, String>>() {
-            public void join(Tuple2<Text, Map<String, String>> postTuple, Tuple2<Text, Map<String, String>> profileTuple, Collector<Map<String, String>> out) throws Exception {
-                final Map<String, String> postProp = postTuple.f1;
-                final Map<String, String> profileProp = profileTuple.f1;
+        FlatJoinFunction<Tuple2<Text, Document>, Tuple2<Text, Document>, Document> join = new FlatJoinFunction<Tuple2<Text, Document>, Tuple2<Text, Document>, Document>() {
+            public void join(Tuple2<Text, Document> postTuple, Tuple2<Text, Document> profileTuple, Collector<Document> out) throws Exception {
+                final Post postProp = (Post) postTuple.f1;
+                final Profile profileProp = (Profile) profileTuple.f1;
 
                 final Post post = new Post();
-                post.id = postProp.get(PostProperties.ID);
-                post.profileId = postProp.get(PostProperties.PROFILE_ID);
-                post.body = postProp.get(PostProperties.BODY);
+                post.id = postProp.id;
+                post.profileId= postProp.profileId;
+                post.body= postProp.body;
+//                post.id = postProp.get(PostProperties.ID);
+//                post.profileId = postProp.get(PostProperties.PROFILE_ID);
+//                post.body = postProp.get(PostProperties.BODY);
 
                 out.collect(postProp);
             }
         };
-        DataSet<Map<String, String>> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
+//        FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Document>, Document> join2=new FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Document>, Document>() {
+//            public void join(Tuple2<Text, Map<String, String>> postTuple, Tuple2<Text, Document> profileTuple, Collector<Document> collector) throws Exception {
+//                final Post postProp = (Post) postTuple.f1;
+//                final Profile profileProp = (Profile) profileTuple.f1;
+//
+//                final Post post = new Post();
+//                post.id = postProp.id;
+//                post.profileId= postProp.profileId;
+//                post.body= postProp.body;
+////                post.id = postProp.get(PostProperties.ID);
+////                post.profileId = postProp.get(PostProperties.PROFILE_ID);
+////                post.body = postProp.get(PostProperties.BODY);
+//
+//                collector.collect(postProp);
+//            }
+//        };
+        DataSet<Document> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
         //denorm.print();
-        final List<Map<String, String>> collect = denorm.collect();
+        final List<Document> collect = denorm.collect();
         saveToElastic(collect);
 
         //final long totalDenorm = denorm.count();
@@ -101,9 +120,9 @@ public class IndexRunner {
         System.out.println("elapsedTime=" + elapsedTime);
     }
 
-    private static void saveToElastic(List<Map<String, String>> collect) throws Exception {
+    private static void saveToElastic(List<Document> collect) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        final DataStreamSource<Map<String, String>> source = env.fromCollection(collect);
+        final DataStreamSource<Document> source = env.fromCollection(collect);
         Map<String, String> config = new HashMap<String, String>();
         //config.put("bulk.flush.max.actions", "1");
         config.put("cluster.name", "kviz-es");
@@ -112,18 +131,19 @@ public class IndexRunner {
         transports.add(new InetSocketAddress(InetAddress.getByName("192.168.1.101"), 9300));
 
 
-        source.addSink(new ElasticsearchSink<Map<String, String>>(config, transports, new ElasticsearchSinkFunction<Map<String, String>>() {
-            public void process(Map<String, String> element, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
+        source.addSink(new ElasticsearchSink<Document>(config, transports, new ElasticsearchSinkFunction<Document>() {
+            public void process(Document element, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
 
                 Map<String, Object> json = new HashMap<String, Object>();
-                json.put("body", element.get(PostProperties.BODY));
+                //json.put("body", element.get(PostProperties.BODY));
+                json.put("body", element.segment);
 
 
                 final IndexRequest request = Requests.indexRequest()
                         .index("wn")
                         .type("post")
                         .source(json)
-                        .id(element.get(PostProperties.ID));
+                        .id(element.id);
                 requestIndexer.add(request);
             }
         }));
