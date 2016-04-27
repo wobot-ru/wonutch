@@ -1,6 +1,6 @@
-package ru.wobot.flink;
+package ru.wobot.index;
 
-public class Profile extends Document {
+public class Profile extends Indexable {
     public String smProfileId;
     public String name;
     public String city;

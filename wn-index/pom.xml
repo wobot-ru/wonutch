@@ -17,7 +17,7 @@
         <project.build.source>1.7</project.build.source>
     </properties>
 
-    <groupId>ru.wobot.flink</groupId>
+    <groupId>ru.wobot.sm.core.index.flink</groupId>
     <artifactId>wn-index</artifactId>
     <version>0.2.0-SNAPSHOT</version>
 
@@ -25,18 +25,20 @@
         <repository>
             <id>sonatype-oss</id>
             <url>http://oss.sonatype.org/content/repositories/snapshots</url>
-            <snapshots><enabled>true</enabled></snapshots>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
         <!--<repository>-->
-            <!--<id>apache.snapshots</id>-->
-            <!--<name>Apache Development Snapshot Repository</name>-->
-            <!--<url>https://repository.apache.org/content/repositories/snapshots/</url>-->
-            <!--<releases>-->
-                <!--<enabled>false</enabled>-->
-            <!--</releases>-->
-            <!--<snapshots>-->
-                <!--<enabled>true</enabled>-->
-            <!--</snapshots>-->
+        <!--<id>apache.snapshots</id>-->
+        <!--<name>Apache Development Snapshot Repository</name>-->
+        <!--<url>https://repository.apache.org/content/repositories/snapshots/</url>-->
+        <!--<releases>-->
+        <!--<enabled>false</enabled>-->
+        <!--</releases>-->
+        <!--<snapshots>-->
+        <!--<enabled>true</enabled>-->
+        <!--</snapshots>-->
         <!--</repository>-->
     </repositories>
 
@@ -119,7 +121,7 @@
                     <archive>
                         <manifest>
                             <addClasspath>true</addClasspath>
-                            <mainClass>ru.wobot.flink.IndexRunner</mainClass>
+                            <mainClass>ru.wobot.sm.core.index.flink.IndexRunner</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

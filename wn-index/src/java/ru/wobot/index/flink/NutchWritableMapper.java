@@ -1,15 +1,12 @@
-package ru.wobot.flink;
+package ru.wobot.index.flink;
 
 import org.apache.flink.api.java.tuple.Tuple2;
-import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.util.Collector;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.Writable;
 import org.apache.nutch.crawl.CrawlDatum;
 import org.apache.nutch.crawl.Inlinks;
 import org.apache.nutch.crawl.NutchWritable;
-import org.apache.nutch.parse.ParseData;
-import org.apache.nutch.parse.ParseText;
 import org.apache.nutch.protocol.Content;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +29,8 @@ public class NutchWritableMapper implements org.apache.flink.api.common.function
 
 
         out.collect(Tuple2.of(value.f0, new NutchWritable(value.f1)));
-//        if (LOG.isWarnEnabled() && (!(value.f1 instanceof ParseData || value.f1 instanceof ParseText))) {
-//            LOG.warn("Unrecognized type: " + value.getClass());
-//        }
+        //if (LOG.isWarnEnabled() && (!(value.f1 instanceof ParseData || value.f1 instanceof ParseText))) {
+        //LOG.warn("Unrecognized type: " + value.getClass());
+        //}
     }
 }

@@ -1,12 +1,11 @@
-package ru.wobot.flink;
+package ru.wobot.index;
 
-public class Post extends Document {
+public class Post extends Indexable {
     public String profileId;
     public long smPostId;
     public String parentPostId;
     public String body;
     public String date;
-    public int engagement;
+    public long engagement;
     public Boolean isComment;
-    public String authorName;
 }
