@@ -11,8 +11,9 @@ import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple3;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.connectors.elasticsearch.ElasticsearchSink;
-import org.apache.flink.streaming.connectors.elasticsearch.IndexRequestBuilder;
+import org.apache.flink.streaming.connectors.elasticsearch2.ElasticsearchSink;
+import org.apache.flink.streaming.connectors.elasticsearch2.ElasticsearchSinkFunction;
+import org.apache.flink.streaming.connectors.elasticsearch2.RequestIndexer;
 import org.apache.flink.util.Collector;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -74,8 +75,8 @@ public class IndexRunner {
         }).project(1, 2);
 
 
-        FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Map<String, String>>, Tuple2<Text, Text>> join = new FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Map<String, String>>, Tuple2<Text, Text>>() {
-            public void join(Tuple2<Text, Map<String, String>> postTuple, Tuple2<Text, Map<String, String>> profileTuple, Collector<Tuple2<Text, Text>> out) throws Exception {
+        FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Map<String, String>>, Map<String, String>> join = new FlatJoinFunction<Tuple2<Text, Map<String, String>>, Tuple2<Text, Map<String, String>>, Map<String, String>>() {
+            public void join(Tuple2<Text, Map<String, String>> postTuple, Tuple2<Text, Map<String, String>> profileTuple, Collector<Map<String, String>> out) throws Exception {
                 final Map<String, String> postProp = postTuple.f1;
                 final Map<String, String> profileProp = profileTuple.f1;
 
@@ -84,24 +85,25 @@ public class IndexRunner {
                 post.profileId = postProp.get(PostProperties.PROFILE_ID);
                 post.body = postProp.get(PostProperties.BODY);
 
-                out.collect(Tuple2.of(new Text(post.id), new Text(post.body)));
+                out.collect(postProp);
             }
         };
-        DataSet<Tuple2<Text, Text>> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
-        saveToElastic(denorm.collect());
+        DataSet<Map<String, String>> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
+        //denorm.print();
+        final List<Map<String, String>> collect = denorm.collect();
+        saveToElastic(collect);
 
         //final long totalDenorm = denorm.count();
         //System.out.println("Total denorm imported: " + totalDenorm);
         Long stopTime = System.currentTimeMillis();
         long elapsedTime = stopTime - startTime;
+        System.out.println("Total posts imported=" + collect.size());
         System.out.println("elapsedTime=" + elapsedTime);
-        //posts.print();
-
     }
 
-    private static void saveToElastic(List<Tuple2<Text, Text>> collect) throws Exception {
+    private static void saveToElastic(List<Map<String, String>> collect) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        final DataStreamSource<Tuple2<Text, Text>> source = env.fromCollection(collect);
+        final DataStreamSource<Map<String, String>> source = env.fromCollection(collect);
         Map<String, String> config = new HashMap<String, String>();
         //config.put("bulk.flush.max.actions", "1");
         config.put("cluster.name", "kviz-es");
@@ -110,16 +112,19 @@ public class IndexRunner {
         transports.add(new InetSocketAddress(InetAddress.getByName("192.168.1.101"), 9300));
 
 
-        source.addSink(new ElasticsearchSink<Tuple2<Text, Text>>(config, new IndexRequestBuilder<Tuple2<Text, Text>>() {
-            public IndexRequest createIndexRequest(Tuple2<Text, Text> element, RuntimeContext ctx) {
-                Map<String, Object> json = new HashMap<String, Object>();
-                json.put("body", element.f1);
+        source.addSink(new ElasticsearchSink<Map<String, String>>(config, transports, new ElasticsearchSinkFunction<Map<String, String>>() {
+            public void process(Map<String, String> element, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
 
-                return Requests.indexRequest()
-                        .index("m")
-                        .type("my-type")
+                Map<String, Object> json = new HashMap<String, Object>();
+                json.put("body", element.get(PostProperties.BODY));
+
+
+                final IndexRequest request = Requests.indexRequest()
+                        .index("wn")
+                        .type("post")
                         .source(json)
-                        .id(element.f0.toString());
+                        .id(element.get(PostProperties.ID));
+                requestIndexer.add(request);
             }
         }));
 
