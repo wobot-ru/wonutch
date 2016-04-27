@@ -24,6 +24,9 @@ import org.slf4j.LoggerFactory;
 import ru.wobot.sm.core.mapping.ProfileProperties;
 
 public class ProfileToHbaseReducer implements org.apache.flink.api.common.functions.GroupReduceFunction<org.apache.flink.api.java.tuple.Tuple2<org.apache.hadoop.io.Text, org.apache.nutch.crawl.NutchWritable>, org.apache.flink.api.java.tuple.Tuple2<org.apache.hadoop.io.Text, org.apache.hadoop.hbase.client.Mutation>> {
+    private static final String DIGEST = "digest";
+    private static final String SEGMENT = "segment";
+
     public static final Logger LOG = LoggerFactory
             .getLogger(ProfileToHbaseReducer.class);
 
@@ -77,10 +80,10 @@ public class ProfileToHbaseReducer implements org.apache.flink.api.common.functi
             return;
 
         // add segment, used to map from merged index back to segment files
-        doc.add(ProfileProperties.SEGMENT, metadata.get(Nutch.SEGMENT_NAME_KEY));
+        doc.add(SEGMENT, metadata.get(Nutch.SEGMENT_NAME_KEY));
 
         // add digest, used by dedup
-        doc.add(ProfileProperties.DIGEST, metadata.get(Nutch.SIGNATURE_KEY));
+        doc.add(DIGEST, metadata.get(Nutch.SIGNATURE_KEY));
 
         final Parse parse = new ParseImpl(new ParseText(), parseData);
 
@@ -99,12 +102,11 @@ public class ProfileToHbaseReducer implements org.apache.flink.api.common.functi
             doc.add(tag, parse.getData().getParseMeta().get(tag));
         }
 
-
         Put put = new Put(key.getBytes());
-        final String segment = (String) doc.getFieldValue(ProfileProperties.SEGMENT);
+        final String segment = (String) doc.getFieldValue(SEGMENT);
         if (!StringUtil.isEmpty(segment))
             put.add(ProfileTableConstants.CF_P, ProfileTableConstants.P_SEGMENT, Bytes.toBytes(segment));
-        final String digest = (String) doc.getFieldValue(ProfileProperties.DIGEST);
+        final String digest = (String) doc.getFieldValue(DIGEST);
         if (!StringUtil.isEmpty(digest))
             put.add(ProfileTableConstants.CF_P, ProfileTableConstants.P_DIGEST, Bytes.toBytes(digest));
         final String smProfileId = (String) doc.getFieldValue(ProfileProperties.SM_PROFILE_ID);
@@ -162,7 +164,7 @@ public class ProfileToHbaseReducer implements org.apache.flink.api.common.functi
         out.collect(reuse);
     }
 
-    public interface ProfileTableConstants {
+    interface ProfileTableConstants {
         byte[] CF_P = "p".getBytes();
         byte[] P_NAME = "name".getBytes();
         byte[] P_REACH = "reach".getBytes();

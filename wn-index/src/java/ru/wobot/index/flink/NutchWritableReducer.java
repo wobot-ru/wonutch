@@ -75,6 +75,7 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
 
 
         final String segment = contentMeta.get(Nutch.SEGMENT_NAME_KEY);
+        final String score = contentMeta.get(Nutch.SCORE_KEY);
         final String digest = contentMeta.get(Nutch.SIGNATURE_KEY);
         final String crawlDate = contentMeta.get(ContentMetaConstants.FETCH_TIME);
         final boolean isSingleDoc = !"true".equals(contentMeta.get(ContentMetaConstants.MULTIPLE_PARSE_RESULT));
@@ -83,8 +84,10 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
             final Metadata parseMeta = parseData.getParseMeta();
             if (contentMeta.get(ContentMetaConstants.TYPE).equals(ru.wobot.sm.core.mapping.Types.PROFILE)) {
                 final Profile profile = new Profile();
-                profile.crawlDate = crawlDate;
+                profile.id = key.toString();
                 profile.segment = segment;
+                profile.crawlDate = crawlDate;
+                profile.score = score;
                 profile.digest = digest;
                 profile.source = parseMeta.get(ProfileProperties.SOURCE);
                 profile.name = parseMeta.get(ProfileProperties.NAME);
@@ -112,8 +115,11 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
                         final long engagement = Math.round((Double) parseMeta.get(PostProperties.ENGAGEMENT));
 
                         final Post post = new Post();
-                        post.crawlDate = crawlDate;
                         post.id = parseResult.getUrl();
+                        post.crawlDate = crawlDate;
+                        post.digest = (String) parseResult.getContentMeta().get(DIGEST);
+                        post.segment = segment;
+                        post.score = score;
                         post.source = (String) parseMeta.get(PostProperties.SOURCE);
                         post.profileId = (String) parseMeta.get(PostProperties.PROFILE_ID);
                         post.href = (String) parseMeta.get(PostProperties.HREF);
@@ -123,8 +129,6 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
                         post.isComment = (Boolean) parseMeta.get(PostProperties.IS_COMMENT);
                         post.engagement = engagement;
                         post.parentPostId = (String) parseMeta.get(PostProperties.PARENT_POST_ID);
-                        post.digest = (String) parseResult.getContentMeta().get(DIGEST);
-                        post.segment = segment;
                         out.collect(Tuple4.of(Types.POST, new Text(post.profileId), post, NULL_PROFILE));
                     }
                 }

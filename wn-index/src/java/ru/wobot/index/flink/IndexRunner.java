@@ -7,6 +7,7 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat;
 import org.apache.flink.api.java.operators.*;
+import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -32,9 +33,10 @@ import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.client.Requests;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.wobot.index.DetailedPost;
+import ru.wobot.index.Types;
 import ru.wobot.index.Post;
 import ru.wobot.index.Profile;
-import ru.wobot.index.Types;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -60,8 +62,6 @@ public class IndexRunner {
 
         addFiles(profileMapJob, args);
 
-        //profileMapJob.getConfiguration().set(TableOutputFormat.OUTPUT_TABLE, HBaseConstants.PROFILE_TABLE_NAME);
-        //profileMapJob.getConfiguration().set("mapreduce.output.fileoutputformat.outputdir", HBaseConstants.TMP_DIR);
         DataSource<Tuple2<Text, Writable>> input = env.createInput(new HadoopInputFormat<Text, Writable>(new SequenceFileInputFormat<Text, Writable>(), Text.class, Writable.class, profileMapJob));
         FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new NutchWritableMapper());
 
@@ -90,8 +90,8 @@ public class IndexRunner {
         saveToElastic(collect);
 
         Long stopTime = System.currentTimeMillis();
-        long elapsedTime = stopTime - startTime;
         System.out.println("Total posts imported=" + collect.size());
+        long elapsedTime = stopTime - startTime;
         System.out.println("elapsedTime=" + elapsedTime);
     }
 
@@ -110,11 +110,34 @@ public class IndexRunner {
             public void process(Tuple2<Post, Profile> element, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
                 Map<String, Object> json = new HashMap<String, Object>();
                 final Post post = element.f0;
-                json.put("body", post.body);
+                final Profile profile = element.f1;
+
+                json.put(DetailedPost.PropertyName.ID, post.id);
+                json.put(DetailedPost.PropertyName.CRAWL_DATE, post.crawlDate);
+                json.put(DetailedPost.PropertyName.DIGEST, post.digest);
+                json.put(DetailedPost.PropertyName.SCORE, post.score);
+                json.put(DetailedPost.PropertyName.SEGMENT, post.segment + "-" + profile.segment);
+                json.put(DetailedPost.PropertyName.SOURCE, post.source);
+                json.put(DetailedPost.PropertyName.IS_COMMENT, post.isComment);
+                json.put(DetailedPost.PropertyName.ENGAGEMENT, post.engagement);
+                json.put(DetailedPost.PropertyName.PARENT_POST_ID, post.parentPostId);
+                json.put(DetailedPost.PropertyName.POST_BODY, post.body);
+                json.put(DetailedPost.PropertyName.POST_DATE, post.date);
+                json.put(DetailedPost.PropertyName.POST_HREF, post.href);
+                json.put(DetailedPost.PropertyName.SM_POST_ID, post.smPostId);
+
+                json.put(DetailedPost.PropertyName.PROFILE_CITY, profile.city);
+                json.put(DetailedPost.PropertyName.PROFILE_GENDER, profile.gender);
+                json.put(DetailedPost.PropertyName.PROFILE_HREF, profile.href);
+                json.put(DetailedPost.PropertyName.PROFILE_ID, profile.id);
+                json.put(DetailedPost.PropertyName.PROFILE_NAME, profile.name);
+                json.put(DetailedPost.PropertyName.REACH, profile.reach);
+                json.put(DetailedPost.PropertyName.SM_PROFILE_ID, profile.smProfileId);
 
 
                 final IndexRequest request = Requests.indexRequest()
-                        .index("wn")
+                        .create(false)
+                        .index("wobot")
                         .type("post")
                         .source(json)
                         .id(post.id);
