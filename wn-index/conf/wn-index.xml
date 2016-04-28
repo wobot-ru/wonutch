@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>elastic.host</name>
+        <value>worker2</value>
+    </property>
+    <property>
+        <name>elastic.port</name>
+        <value>9300</value>
+    </property>
+    <property>
+        <name>elastic.cluster</name>
+        <value>wobot-cluster</value>
+    </property>
+    <property>
+        <name>elastic.index</name>
+        <value>wobot</value>
+    </property>
+  <property>
+      <name>elastic.max.bulk.docs</name>
+      <value>2500</value>
+      <description>Maximum size of the bulk in number of documents.</description>
+    </property>
+    <property>
+      <name>elastic.max.bulk.size</name>
+      <value>25005000</value>
+      <description>Maximum size of the bulk in bytes.</description>
+    </property>
+</configuration>

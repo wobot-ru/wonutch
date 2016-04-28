@@ -1,0 +1,17 @@
+#!/bin/bash
+#   Usage: wn-indexer [-?] -d <segments> | -s <segment>
+#    -?,--help             print this help message
+#    -d,--dir <segments>   indexing directories of nutch segments
+#    -s,--seg <segment>    indexing nutch's segments
+#
+# INDEXING FOR EACH SEGMENT
+
+JAVA_PROPERTIES=""
+EXEC_CALL=(java -cp "conf;wn-index-0.2.0-SNAPSHOT-jar-with-dependencies.jar" ru.wobot.index.flink.IndexRunner)
+
+# run it
+exec "${EXEC_CALL[@]}" "$@"
+
+done
+
+exit 0

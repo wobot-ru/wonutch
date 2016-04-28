@@ -7,7 +7,6 @@ import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat;
 import org.apache.flink.api.java.operators.*;
-import org.apache.flink.api.java.tuple.Tuple;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple4;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
@@ -34,9 +33,9 @@ import org.elasticsearch.client.Requests;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.wobot.index.DetailedPost;
-import ru.wobot.index.Types;
 import ru.wobot.index.Post;
 import ru.wobot.index.Profile;
+import ru.wobot.index.Types;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -51,16 +50,20 @@ public class IndexRunner {
             .getLogger(IndexRunner.class);
 
     public static void main(String[] args) throws Exception {
-        if (args.length < 1) {
-            System.err.println("Usage: <segment> ... | --dir <segments> ...");
-            throw new RuntimeException();
-        }
+
+        final IndexParams.Params params = IndexParams.parse(args);
+        if (!params.canExecute()) return;
 
         long startTime = System.currentTimeMillis();
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         final Job profileMapJob = Job.getInstance();
 
-        addFiles(profileMapJob, args);
+        final String[] segs = params.getSegs();
+        if (segs != null)
+            addSegments(profileMapJob, segs);
+        final String[] dirs = params.getDirs();
+        if (dirs != null)
+            addSegmentDirs(profileMapJob, dirs);
 
         DataSource<Tuple2<Text, Writable>> input = env.createInput(new HadoopInputFormat<Text, Writable>(new SequenceFileInputFormat<Text, Writable>(), Text.class, Writable.class, profileMapJob));
         FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new NutchWritableMapper());
@@ -87,7 +90,7 @@ public class IndexRunner {
         };
         DataSet<Tuple2<Post, Profile>> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
         final List<Tuple2<Post, Profile>> collect = denorm.collect();
-        saveToElastic(collect);
+        saveToElastic(collect, params);
 
         Long stopTime = System.currentTimeMillis();
         System.out.println("Total posts imported=" + collect.size());
@@ -95,17 +98,17 @@ public class IndexRunner {
         System.out.println("elapsedTime=" + elapsedTime);
     }
 
-    private static void saveToElastic(List<Tuple2<Post, Profile>> collect) throws Exception {
+    private static void saveToElastic(List<Tuple2<Post, Profile>> collect, final IndexParams.Params params) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         final DataStreamSource<Tuple2<Post, Profile>> source = env.fromCollection(collect);
         Map<String, String> config = new HashMap<String, String>();
         //config.put("bulk.flush.max.actions", "1");
-        config.put("cluster.name", "kviz-es");
+        config.put("cluster.name", params.getEsCluster());
 
         List<InetSocketAddress> transports = new ArrayList<InetSocketAddress>();
-        transports.add(new InetSocketAddress(InetAddress.getByName("192.168.1.101"), 9300));
+        transports.add(new InetSocketAddress(InetAddress.getByName(params.getEsHost()), params.getEsPort()));
 
-
+        final String esIndex = params.getEsIndex();
         source.addSink(new ElasticsearchSink<Tuple2<Post, Profile>>(config, transports, new ElasticsearchSinkFunction<Tuple2<Post, Profile>>() {
             public void process(Tuple2<Post, Profile> element, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
                 Map<String, Object> json = new HashMap<String, Object>();
@@ -137,7 +140,7 @@ public class IndexRunner {
 
                 final IndexRequest request = Requests.indexRequest()
                         .create(false)
-                        .index("wobot")
+                        .index(esIndex)
                         .type("post")
                         .source(json)
                         .id(post.id);
@@ -148,30 +151,32 @@ public class IndexRunner {
         env.execute("upload to elastic");
     }
 
-    private static void addFiles(Job job, String[] args) throws IOException {
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].equals("--dir")) {
-                Path dir = new Path(args[++i]);
-                FileSystem fs = dir.getFileSystem(job.getConfiguration());
-                FileStatus[] fstats = fs.listStatus(dir, HadoopFSUtil.getPassDirectoriesFilter(fs));
-                Path[] files = HadoopFSUtil.getPaths(fstats);
-                LOG.info("Add dir: " + dir);
-                for (Path p : files) {
-                    if (SegmentChecker.isIndexable(p, fs)) {
-                        LOG.info("Add: " + p);
-                        SequenceFileInputFormat.addInputPath(job, new Path(p, CrawlDatum.FETCH_DIR_NAME));
-                        SequenceFileInputFormat.addInputPath(job, new Path(p, CrawlDatum.PARSE_DIR_NAME));
-                        SequenceFileInputFormat.addInputPath(job, new Path(p, ParseData.DIR_NAME));
-                        SequenceFileInputFormat.addInputPath(job, new Path(p, ParseText.DIR_NAME));
-                    }
+    private static void addSegments(Job job, String[] dirs) throws IOException {
+        for (int i = 0; i < dirs.length; i++) {
+            String segment = dirs[i];
+            LOG.info("Add: " + segment);
+            SequenceFileInputFormat.addInputPath(job, new Path(segment, CrawlDatum.FETCH_DIR_NAME));
+            SequenceFileInputFormat.addInputPath(job, new Path(segment, CrawlDatum.PARSE_DIR_NAME));
+            SequenceFileInputFormat.addInputPath(job, new Path(segment, ParseData.DIR_NAME));
+            SequenceFileInputFormat.addInputPath(job, new Path(segment, ParseText.DIR_NAME));
+        }
+    }
+
+    private static void addSegmentDirs(Job job, String[] dirs) throws IOException {
+        for (int i = 0; i < dirs.length; i++) {
+            Path dir = new Path(dirs[i]);
+            FileSystem fs = dir.getFileSystem(job.getConfiguration());
+            FileStatus[] fstats = fs.listStatus(dir, HadoopFSUtil.getPassDirectoriesFilter(fs));
+            Path[] files = HadoopFSUtil.getPaths(fstats);
+            LOG.info("Add dir: " + dir);
+            for (Path p : files) {
+                if (SegmentChecker.isIndexable(p, fs)) {
+                    LOG.info("Add: " + p);
+                    SequenceFileInputFormat.addInputPath(job, new Path(p, CrawlDatum.FETCH_DIR_NAME));
+                    SequenceFileInputFormat.addInputPath(job, new Path(p, CrawlDatum.PARSE_DIR_NAME));
+                    SequenceFileInputFormat.addInputPath(job, new Path(p, ParseData.DIR_NAME));
+                    SequenceFileInputFormat.addInputPath(job, new Path(p, ParseText.DIR_NAME));
                 }
-            } else {
-                String segment = args[i];
-                LOG.info("Add: " + segment);
-                SequenceFileInputFormat.addInputPath(job, new Path(segment, CrawlDatum.FETCH_DIR_NAME));
-                SequenceFileInputFormat.addInputPath(job, new Path(segment, CrawlDatum.PARSE_DIR_NAME));
-                SequenceFileInputFormat.addInputPath(job, new Path(segment, ParseData.DIR_NAME));
-                SequenceFileInputFormat.addInputPath(job, new Path(segment, ParseText.DIR_NAME));
             }
         }
     }
