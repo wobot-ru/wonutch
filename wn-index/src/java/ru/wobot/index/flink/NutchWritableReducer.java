@@ -82,7 +82,8 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
 
         if (isSingleDoc) {
             final Metadata parseMeta = parseData.getParseMeta();
-            if (contentMeta.get(ContentMetaConstants.TYPE).equals(ru.wobot.sm.core.mapping.Types.PROFILE)) {
+            final String type = contentMeta.get(ContentMetaConstants.TYPE);
+            if (type != null && type.equals(ru.wobot.sm.core.mapping.Types.PROFILE)) {
                 final Profile profile = new Profile();
                 profile.id = key.toString();
                 profile.segment = segment;

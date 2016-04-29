@@ -192,6 +192,9 @@
                                 <resource>
                                     <directory>conf</directory>
                                     <filtering>true</filtering>
+                                    <includes>
+                                        <includ>wn-index.properties</includ>
+                                    </includes>
                                 </resource>
                             </resources>
                         </configuration>
