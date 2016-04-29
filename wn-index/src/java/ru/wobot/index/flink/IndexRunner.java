@@ -102,7 +102,7 @@ public class IndexRunner {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
         final DataStreamSource<Tuple2<Post, Profile>> source = env.fromCollection(collect);
         Map<String, String> config = new HashMap<String, String>();
-        //config.put("bulk.flush.max.actions", "1");
+        config.put("bulk.flush.max.actions", "1");
         config.put("cluster.name", params.getEsCluster());
 
         List<InetSocketAddress> transports = new ArrayList<InetSocketAddress>();

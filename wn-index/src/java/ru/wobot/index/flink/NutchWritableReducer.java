@@ -105,34 +105,35 @@ public class NutchWritableReducer implements org.apache.flink.api.common.functio
         } else {
             if (parseText != null && !StringUtil.isEmpty(parseText.getText())) {
                 ParseResult[] parseResults = fromJson(parseText.getText(), ParseResult[].class);
-                for (ParseResult parseResult : parseResults) {
-                    String subType = (String) parseResult.getContentMeta().get(ContentMetaConstants.TYPE);
-                    if (subType == null) {
-                        subType = parseData.getContentMeta().get(ContentMetaConstants.TYPE);
-                    }
-                    if (subType.equals(ru.wobot.sm.core.mapping.Types.POST)) {
-                        final Map<String, Object> parseMeta = parseResult.getParseMeta();
-                        final long smPostId = Math.round((Double) parseMeta.get(PostProperties.SM_POST_ID));
-                        final long engagement = Math.round((Double) parseMeta.get(PostProperties.ENGAGEMENT));
+                if (parseResults != null)
+                    for (ParseResult parseResult : parseResults) {
+                        String subType = (String) parseResult.getContentMeta().get(ContentMetaConstants.TYPE);
+                        if (subType == null) {
+                            subType = parseData.getContentMeta().get(ContentMetaConstants.TYPE);
+                        }
+                        if (subType.equals(ru.wobot.sm.core.mapping.Types.POST)) {
+                            final Map<String, Object> parseMeta = parseResult.getParseMeta();
 
-                        final Post post = new Post();
-                        post.id = parseResult.getUrl();
-                        post.crawlDate = crawlDate;
-                        post.digest = (String) parseResult.getContentMeta().get(DIGEST);
-                        post.segment = segment;
-                        post.score = score;
-                        post.source = (String) parseMeta.get(PostProperties.SOURCE);
-                        post.profileId = (String) parseMeta.get(PostProperties.PROFILE_ID);
-                        post.href = (String) parseMeta.get(PostProperties.HREF);
-                        post.smPostId = smPostId;
-                        post.body = (String) parseMeta.get(PostProperties.BODY);
-                        post.date = (String) parseMeta.get(PostProperties.POST_DATE);
-                        post.isComment = (Boolean) parseMeta.get(PostProperties.IS_COMMENT);
-                        post.engagement = engagement;
-                        post.parentPostId = (String) parseMeta.get(PostProperties.PARENT_POST_ID);
-                        out.collect(Tuple4.of(Types.POST, new Text(post.profileId), post, NULL_PROFILE));
+                            final Post post = new Post();
+                            post.id = parseResult.getUrl();
+                            post.crawlDate = crawlDate;
+                            post.digest = (String) parseResult.getContentMeta().get(DIGEST);
+                            post.segment = segment;
+                            post.score = score;
+                            post.source = (String) parseMeta.get(PostProperties.SOURCE);
+                            post.profileId = (String) parseMeta.get(PostProperties.PROFILE_ID);
+                            post.href = (String) parseMeta.get(PostProperties.HREF);
+                            post.smPostId = String.valueOf(parseMeta.get(PostProperties.SM_POST_ID));
+                            post.body = (String) parseMeta.get(PostProperties.BODY);
+                            post.date = (String) parseMeta.get(PostProperties.POST_DATE);
+                            post.isComment = (Boolean) parseMeta.get(PostProperties.IS_COMMENT);
+                            final String engagement = String.valueOf(parseMeta.get(PostProperties.ENGAGEMENT));
+                            if (!StringUtil.isEmpty(engagement))
+                                post.engagement = Math.round(Double.parseDouble(engagement));
+                            post.parentPostId = (String) parseMeta.get(PostProperties.PARENT_POST_ID);
+                            out.collect(Tuple4.of(Types.POST, new Text(post.profileId), post, NULL_PROFILE));
+                        }
                     }
-                }
             }
         }
 
