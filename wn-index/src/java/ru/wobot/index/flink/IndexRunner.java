@@ -3,8 +3,10 @@ package ru.wobot.index.flink;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatJoinFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
+import org.apache.flink.api.common.operators.base.JoinOperatorBase;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
+import org.apache.flink.api.java.functions.SampleInPartition;
 import org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat;
 import org.apache.flink.api.java.operators.*;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -83,24 +85,55 @@ public class IndexRunner {
             }
         });
 
-        FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, Tuple2<Post, Profile>> join = new FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, Tuple2<Post, Profile>>() {
-            public void join(Tuple2<Text, Post> post, Tuple2<Text, Profile> profile, Collector<Tuple2<Post, Profile>> collector) throws Exception {
-                collector.collect(Tuple2.of(post.f1, profile.f1));
+        FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostDetaild> join = new FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostDetaild>() {
+            public void join(Tuple2<Text, Post> tp, Tuple2<Text, Profile> ta, Collector<PostDetaild> collector) throws Exception {
+                final Post post = tp.f1;
+                final Profile profile = ta.f1;
+                final PostDetaild result = new PostDetaild();
+                result.id=post.id;
+                result.crawlDate=post.crawlDate;
+                result.digest=post.digest;
+                result.score=post.score;
+                result.segment=post.segment + "-" + profile.segment;
+                result.source=post.source;
+                result.isComment=post.isComment;
+                result.engagement=post.engagement;
+                result.parentPostId=post.parentPostId;
+                result.body=post.body;
+                result.date=post.date;
+                result.href=post.href;
+                result.smPostId=post.smPostId;
+
+                result.city=profile.city;
+                result.gender=profile.gender;
+                result.profileHref=profile.href;
+                result.profileId=profile.id;
+                result.profileName=profile.name;
+                result.reach=profile.reach;
+                result.smProfileId=profile.smProfileId;
+
+                collector.collect(result);
             }
         };
-        DataSet<Tuple2<Post, Profile>> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
-        final List<Tuple2<Post, Profile>> collect = denorm.collect();
-        saveToElastic(collect, params);
+        DataSet<PostDetaild> denorm = posts.join(profiles, JoinOperatorBase.JoinHint.REPARTITION_SORT_MERGE).where(0).equalTo(0).with(join).rebalance();
+        //final IterativeDataSet<Tuple2<Post, Profile>> firstIteration = denorm.iterate(5);
+        //DataSet<Tuple2<Post, Profile>> firstResult = firstIteration.closeWith(firstIteration);
+        //DataSet<Tuple2<Post, Profile>> firstResult = firstIteration.closeWith(firstIteration.map(new IdMapper()));
+
+        //final List<Tuple2<Post, Profile>> collect = denorm.collect();
+        //firstResult.print();
+
+        saveToElastic(denorm, params);
 
         Long stopTime = System.currentTimeMillis();
-        System.out.println("Total posts imported=" + collect.size());
+        //System.out.println("Total posts imported=" + collect.size());
         long elapsedTime = stopTime - startTime;
         System.out.println("elapsedTime=" + elapsedTime);
     }
 
-    private static void saveToElastic(List<Tuple2<Post, Profile>> collect, final IndexParams.Params params) throws Exception {
+    private static void saveToElastic(DataSet<PostDetaild> collect, final IndexParams.Params params) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        final DataStreamSource<Tuple2<Post, Profile>> source = env.fromCollection(collect);
+        final DataStreamSource<PostDetaild> source = env.fromCollection(collect.collect());
         Map<String, String> config = new HashMap<String, String>();
         config.put("bulk.flush.max.actions", "1");
         config.put("cluster.name", params.getEsCluster());
@@ -109,17 +142,38 @@ public class IndexRunner {
         transports.add(new InetSocketAddress(InetAddress.getByName(params.getEsHost()), params.getEsPort()));
 
         final String esIndex = params.getEsIndex();
-        source.addSink(new ElasticsearchSink<Tuple2<Post, Profile>>(config, transports, new ElasticsearchSinkFunction<Tuple2<Post, Profile>>() {
-            public void process(Tuple2<Post, Profile> element, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
+        source.addSink(new ElasticsearchSink<PostDetaild>(config, transports, new ElasticsearchSinkFunction<PostDetaild>() {
+            public void process(PostDetaild post, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
                 Map<String, Object> json = new HashMap<String, Object>();
-                final Post post = element.f0;
-                final Profile profile = element.f1;
+
+//                json.put(DetailedPost.PropertyName.ID, post.id);
+//                json.put(DetailedPost.PropertyName.CRAWL_DATE, post.crawlDate);
+//                json.put(DetailedPost.PropertyName.DIGEST, post.digest);
+//                json.put(DetailedPost.PropertyName.SCORE, post.score);
+//                json.put(DetailedPost.PropertyName.SEGMENT, post.segment + "-" + profile.segment);
+//                json.put(DetailedPost.PropertyName.SOURCE, post.source);
+//                json.put(DetailedPost.PropertyName.IS_COMMENT, post.isComment);
+//                json.put(DetailedPost.PropertyName.ENGAGEMENT, post.engagement);
+//                json.put(DetailedPost.PropertyName.PARENT_POST_ID, post.parentPostId);
+//                json.put(DetailedPost.PropertyName.POST_BODY, post.body);
+//                json.put(DetailedPost.PropertyName.POST_DATE, post.date);
+//                json.put(DetailedPost.PropertyName.POST_HREF, post.href);
+//                json.put(DetailedPost.PropertyName.SM_POST_ID, post.smPostId);
+//
+//                json.put(DetailedPost.PropertyName.PROFILE_CITY, profile.city);
+//                json.put(DetailedPost.PropertyName.PROFILE_GENDER, profile.gender);
+//                json.put(DetailedPost.PropertyName.PROFILE_HREF, profile.href);
+//                json.put(DetailedPost.PropertyName.PROFILE_ID, profile.id);
+//                json.put(DetailedPost.PropertyName.PROFILE_NAME, profile.name);
+//                json.put(DetailedPost.PropertyName.REACH, profile.reach);
+//                json.put(DetailedPost.PropertyName.SM_PROFILE_ID, profile.smProfileId);
+
 
                 json.put(DetailedPost.PropertyName.ID, post.id);
                 json.put(DetailedPost.PropertyName.CRAWL_DATE, post.crawlDate);
                 json.put(DetailedPost.PropertyName.DIGEST, post.digest);
                 json.put(DetailedPost.PropertyName.SCORE, post.score);
-                json.put(DetailedPost.PropertyName.SEGMENT, post.segment + "-" + profile.segment);
+                json.put(DetailedPost.PropertyName.SEGMENT, post.segment);
                 json.put(DetailedPost.PropertyName.SOURCE, post.source);
                 json.put(DetailedPost.PropertyName.IS_COMMENT, post.isComment);
                 json.put(DetailedPost.PropertyName.ENGAGEMENT, post.engagement);
@@ -129,13 +183,13 @@ public class IndexRunner {
                 json.put(DetailedPost.PropertyName.POST_HREF, post.href);
                 json.put(DetailedPost.PropertyName.SM_POST_ID, post.smPostId);
 
-                json.put(DetailedPost.PropertyName.PROFILE_CITY, profile.city);
-                json.put(DetailedPost.PropertyName.PROFILE_GENDER, profile.gender);
-                json.put(DetailedPost.PropertyName.PROFILE_HREF, profile.href);
-                json.put(DetailedPost.PropertyName.PROFILE_ID, profile.id);
-                json.put(DetailedPost.PropertyName.PROFILE_NAME, profile.name);
-                json.put(DetailedPost.PropertyName.REACH, profile.reach);
-                json.put(DetailedPost.PropertyName.SM_PROFILE_ID, profile.smProfileId);
+                json.put(DetailedPost.PropertyName.PROFILE_CITY, post.city);
+                json.put(DetailedPost.PropertyName.PROFILE_GENDER, post.gender);
+                json.put(DetailedPost.PropertyName.PROFILE_HREF, post.profileHref);
+                json.put(DetailedPost.PropertyName.PROFILE_ID, post.profileId);
+                json.put(DetailedPost.PropertyName.PROFILE_NAME, post.profileName);
+                json.put(DetailedPost.PropertyName.REACH, post.reach);
+                json.put(DetailedPost.PropertyName.SM_PROFILE_ID, post.smProfileId);
 
 
                 final IndexRequest request = Requests.indexRequest()
@@ -181,4 +235,9 @@ public class IndexRunner {
         }
     }
 
+    private static class IdMapper implements org.apache.flink.api.common.functions.MapFunction<Tuple2<Post, Profile>, Tuple2<Post, Profile>> {
+        public Tuple2<Post, Profile> map(Tuple2<Post, Profile> postProfileTuple2) throws Exception {
+            return postProfileTuple2;
+        }
+    }
 }
