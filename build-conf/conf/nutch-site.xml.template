@@ -19,7 +19,7 @@
     </property>
     <property>
         <name>elastic.host</name>
-        <value>worker2</value>
+        <value>es-01</value>
     </property>
     <property>
         <name>elastic.port</name>
@@ -27,7 +27,7 @@
     </property>
     <property>
         <name>elastic.cluster</name>
-        <value>wobot-cluster</value>
+        <value>wobot-new-cluster</value>
     </property>
     <property>
         <name>elastic.index</name>
