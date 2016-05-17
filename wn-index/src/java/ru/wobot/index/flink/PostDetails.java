@@ -3,7 +3,7 @@ package ru.wobot.index.flink;
 /**
  * Created by kviz on 4/30/2016.
  */
-public class PostDetaild {
+public class PostDetails {
     public String id;
     public String crawlDate;
     public String digest;

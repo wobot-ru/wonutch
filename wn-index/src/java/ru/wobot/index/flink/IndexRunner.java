@@ -1,12 +1,12 @@
 package ru.wobot.index.flink;
 
+import org.apache.commons.cli.Option;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatJoinFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
 import org.apache.flink.api.common.operators.base.JoinOperatorBase;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
-import org.apache.flink.api.java.functions.SampleInPartition;
 import org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat;
 import org.apache.flink.api.java.operators.*;
 import org.apache.flink.api.java.tuple.Tuple2;
@@ -53,6 +53,8 @@ public class IndexRunner {
 
     public static void main(String[] args) throws Exception {
 
+//        final Option.Builder trololo = Option.builder("trololo");
+//        if (trololo == null) LOG.trace("trololo==null");
         final IndexParams.Params params = IndexParams.parse(args);
         if (!params.canExecute()) return;
 
@@ -85,45 +87,47 @@ public class IndexRunner {
             }
         });
 
-        FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostDetaild> join = new FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostDetaild>() {
-            public void join(Tuple2<Text, Post> tp, Tuple2<Text, Profile> ta, Collector<PostDetaild> collector) throws Exception {
+        FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostDetails> join = new FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostDetails>() {
+            public void join(Tuple2<Text, Post> tp, Tuple2<Text, Profile> ta, Collector<PostDetails> collector) throws Exception {
                 final Post post = tp.f1;
                 final Profile profile = ta.f1;
-                final PostDetaild result = new PostDetaild();
-                result.id=post.id;
-                result.crawlDate=post.crawlDate;
-                result.digest=post.digest;
-                result.score=post.score;
-                result.segment=post.segment + "-" + profile.segment;
-                result.source=post.source;
-                result.isComment=post.isComment;
-                result.engagement=post.engagement;
-                result.parentPostId=post.parentPostId;
-                result.body=post.body;
-                result.date=post.date;
-                result.href=post.href;
-                result.smPostId=post.smPostId;
+                final PostDetails result = new PostDetails();
+                result.id = post.id;
+                result.crawlDate = post.crawlDate;
+                result.digest = post.digest;
+                result.score = post.score;
+                result.segment = post.segment + "-" + profile.segment;
+                result.source = post.source;
+                result.isComment = post.isComment;
+                result.engagement = post.engagement;
+                result.parentPostId = post.parentPostId;
+                result.body = post.body;
+                result.date = post.date;
+                result.href = post.href;
+                result.smPostId = post.smPostId;
 
-                result.city=profile.city;
-                result.gender=profile.gender;
-                result.profileHref=profile.href;
-                result.profileId=profile.id;
-                result.profileName=profile.name;
-                result.reach=profile.reach;
-                result.smProfileId=profile.smProfileId;
+                result.city = profile.city;
+                result.gender = profile.gender;
+                result.profileHref = profile.href;
+                result.profileId = profile.id;
+                result.profileName = profile.name;
+                result.reach = profile.reach;
+                result.smProfileId = profile.smProfileId;
 
                 collector.collect(result);
             }
         };
-        DataSet<PostDetaild> denorm = posts.join(profiles, JoinOperatorBase.JoinHint.REPARTITION_SORT_MERGE).where(0).equalTo(0).with(join).rebalance();
+        DataSet<PostDetails> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
+
         //final IterativeDataSet<Tuple2<Post, Profile>> firstIteration = denorm.iterate(5);
         //DataSet<Tuple2<Post, Profile>> firstResult = firstIteration.closeWith(firstIteration);
         //DataSet<Tuple2<Post, Profile>> firstResult = firstIteration.closeWith(firstIteration.map(new IdMapper()));
 
         //final List<Tuple2<Post, Profile>> collect = denorm.collect();
         //firstResult.print();
-
-        saveToElastic(denorm, params);
+        final StreamExecutionEnvironment streamEnv = saveToElastic(denorm, params);
+        streamEnv.execute("upload to elastic");
+        //env.execute("trololo");
 
         Long stopTime = System.currentTimeMillis();
         //System.out.println("Total posts imported=" + collect.size());
@@ -131,9 +135,9 @@ public class IndexRunner {
         System.out.println("elapsedTime=" + elapsedTime);
     }
 
-    private static void saveToElastic(DataSet<PostDetaild> collect, final IndexParams.Params params) throws Exception {
+    private static StreamExecutionEnvironment saveToElastic(DataSet<PostDetails> collect, final IndexParams.Params params) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        final DataStreamSource<PostDetaild> source = env.fromCollection(collect.collect());
+        final DataStreamSource<PostDetails> source = env.fromCollection(collect.first(10000).collect());
         Map<String, String> config = new HashMap<String, String>();
         config.put("bulk.flush.max.actions", "1");
         config.put("cluster.name", params.getEsCluster());
@@ -142,8 +146,8 @@ public class IndexRunner {
         transports.add(new InetSocketAddress(InetAddress.getByName(params.getEsHost()), params.getEsPort()));
 
         final String esIndex = params.getEsIndex();
-        source.addSink(new ElasticsearchSink<PostDetaild>(config, transports, new ElasticsearchSinkFunction<PostDetaild>() {
-            public void process(PostDetaild post, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
+        source.addSink(new ElasticsearchSink<PostDetails>(config, transports, new ElasticsearchSinkFunction<PostDetails>() {
+            public void process(PostDetails post, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
                 Map<String, Object> json = new HashMap<String, Object>();
 
 //                json.put(DetailedPost.PropertyName.ID, post.id);
@@ -196,13 +200,17 @@ public class IndexRunner {
                         .create(false)
                         .index(esIndex)
                         .type("post")
-                        .source(json)
-                        .id(post.id);
+                        .id(post.id)
+                        .source(json);
+
                 requestIndexer.add(request);
             }
         }));
 
-        env.execute("upload to elastic");
+//        source.getExecutionEnvironment().execute("upload to elastic");
+//        collect.getExecutionEnvironment().execute("collect");
+        //env.execute("upload to elastic");
+        return env;
     }
 
     private static void addSegments(Job job, String[] dirs) throws IOException {

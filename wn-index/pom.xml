@@ -13,6 +13,7 @@
     <properties>
         <flink.version>1.1-SNAPSHOT</flink.version>
         <hbase.version>0.98.11-hadoop2</hbase.version>
+        <scala.binary.version>2.10</scala.binary.version>
         <project.build.target>1.7</project.build.target>
         <project.build.source>1.7</project.build.source>
     </properties>
@@ -55,17 +56,17 @@
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-streaming-java_2.11</artifactId>
+            <artifactId>flink-streaming-java_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-connector-elasticsearch2_2.11</artifactId>
+            <artifactId>flink-connector-elasticsearch2_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
         </dependency>
         <dependency>
             <groupId>org.apache.flink</groupId>
-            <artifactId>flink-clients_2.11</artifactId>
+            <artifactId>flink-clients_${scala.binary.version}</artifactId>
             <version>${flink.version}</version>
             <exclusions>
                 <exclusion>
