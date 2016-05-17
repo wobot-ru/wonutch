@@ -1,18 +1,19 @@
 package ru.wobot.index.flink;
 
-import org.apache.commons.cli.Option;
+import org.apache.flink.api.common.JobExecutionResult;
 import org.apache.flink.api.common.functions.FilterFunction;
 import org.apache.flink.api.common.functions.FlatJoinFunction;
 import org.apache.flink.api.common.functions.RuntimeContext;
-import org.apache.flink.api.common.operators.base.JoinOperatorBase;
 import org.apache.flink.api.java.DataSet;
 import org.apache.flink.api.java.ExecutionEnvironment;
 import org.apache.flink.api.java.hadoop.mapreduce.HadoopInputFormat;
 import org.apache.flink.api.java.operators.*;
 import org.apache.flink.api.java.tuple.Tuple2;
 import org.apache.flink.api.java.tuple.Tuple4;
+import org.apache.flink.streaming.api.datastream.AllWindowedStream;
 import org.apache.flink.streaming.api.datastream.DataStreamSource;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
+import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.streaming.connectors.elasticsearch2.ElasticsearchSink;
 import org.apache.flink.streaming.connectors.elasticsearch2.ElasticsearchSinkFunction;
 import org.apache.flink.streaming.connectors.elasticsearch2.RequestIndexer;
@@ -56,6 +57,7 @@ public class IndexRunner {
 //        final Option.Builder trololo = Option.builder("trololo");
 //        if (trololo == null) LOG.trace("trololo==null");
         final IndexParams.Params params = IndexParams.parse(args);
+        System.out.println(params);
         if (!params.canExecute()) return;
 
         long startTime = System.currentTimeMillis();
@@ -123,11 +125,8 @@ public class IndexRunner {
         //DataSet<Tuple2<Post, Profile>> firstResult = firstIteration.closeWith(firstIteration);
         //DataSet<Tuple2<Post, Profile>> firstResult = firstIteration.closeWith(firstIteration.map(new IdMapper()));
 
-        //final List<Tuple2<Post, Profile>> collect = denorm.collect();
-        //firstResult.print();
         final StreamExecutionEnvironment streamEnv = saveToElastic(denorm, params);
         streamEnv.execute("upload to elastic");
-        //env.execute("trololo");
 
         Long stopTime = System.currentTimeMillis();
         //System.out.println("Total posts imported=" + collect.size());
@@ -137,15 +136,24 @@ public class IndexRunner {
 
     private static StreamExecutionEnvironment saveToElastic(DataSet<PostDetails> collect, final IndexParams.Params params) throws Exception {
         StreamExecutionEnvironment env = StreamExecutionEnvironment.getExecutionEnvironment();
-        final DataStreamSource<PostDetails> source = env.fromCollection(collect.first(10000).collect());
+        final List<PostDetails> posts;
+        if (params.getMaxDocs() > 0)
+            posts = collect.first(params.getMaxDocs()).collect();
+        else
+            posts = collect.collect();
+
+        final DataStreamSource<PostDetails> source = env.fromCollection(posts);
         Map<String, String> config = new HashMap<String, String>();
-        config.put("bulk.flush.max.actions", "1");
+        config.put(ElasticsearchSink.CONFIG_KEY_BULK_FLUSH_MAX_ACTIONS, params.getMaxActions());
         config.put("cluster.name", params.getEsCluster());
 
         List<InetSocketAddress> transports = new ArrayList<InetSocketAddress>();
         transports.add(new InetSocketAddress(InetAddress.getByName(params.getEsHost()), params.getEsPort()));
 
         final String esIndex = params.getEsIndex();
+        final AllWindowedStream<PostDetails, GlobalWindow> win = source.countWindowAll(500);
+
+
         source.addSink(new ElasticsearchSink<PostDetails>(config, transports, new ElasticsearchSinkFunction<PostDetails>() {
             public void process(PostDetails post, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
                 Map<String, Object> json = new HashMap<String, Object>();
@@ -206,10 +214,6 @@ public class IndexRunner {
                 requestIndexer.add(request);
             }
         }));
-
-//        source.getExecutionEnvironment().execute("upload to elastic");
-//        collect.getExecutionEnvironment().execute("collect");
-        //env.execute("upload to elastic");
         return env;
     }
 

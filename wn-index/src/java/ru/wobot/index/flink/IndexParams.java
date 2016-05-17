@@ -6,6 +6,8 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.PropertiesConfiguration;
 
+import java.util.Arrays;
+
 public class IndexParams {
     private final static String PROPERTY_FILE_NAME = "wn-index.properties";
     private final static String HELP_OP = "?";
@@ -28,6 +30,22 @@ public class IndexParams {
 
         final Options options = new Options();
         options.addOption(Option.builder(HELP_OP).longOpt(HELP_LONG_OP).desc("print this help message").build());
+        options.addOption(Option
+                .builder("totaldocs")
+                .longOpt("docs")
+                .argName("document's count")
+                .numberOfArgs(1)
+                .desc("max imported docs, or -1 if should collect them all")
+                .build());
+
+        options.addOption(Option
+                .builder("maxActions")
+                .longOpt("max")
+                .argName("flag")
+                .numberOfArgs(1)
+                .desc("If this eq 1, then instructs the sink to emit after every element, otherwise they would be buffered\n0 by default")
+                .build());
+
         OptionGroup optionGroup = new OptionGroup();
         optionGroup.setRequired(true);
         optionGroup.addOption(Option
@@ -37,6 +55,7 @@ public class IndexParams {
                 .numberOfArgs(Option.UNLIMITED_VALUES)
                 .desc("indexing nutch's segments")
                 .build());
+
         optionGroup.addOption(Option
                 .builder(DIR_OP)
                 .longOpt("dir")
@@ -46,7 +65,7 @@ public class IndexParams {
                 .build());
         options.addOptionGroup(optionGroup);
 
-        if (showHelp){
+        if (showHelp) {
             HelpFormatter f = new HelpFormatter();
             f.printHelp("wn-indexer", options, true);
             return new Params();
@@ -80,7 +99,9 @@ public class IndexParams {
             } catch (ConfigurationException e) {
                 e.printStackTrace();
             }
-            return new Params(cmd.getOptionValues(SEG_OP), cmd.getOptionValues(DIR_OP), esHost, esPort, esCluster, esIndex);
+            final String maxDocs = cmd.getOptionValue("docs", "-1");
+            final String maxActions = cmd.getOptionValue("max", "1");
+            return new Params(cmd.getOptionValues(SEG_OP), cmd.getOptionValues(DIR_OP), esHost, esPort, esCluster, esIndex, Integer.parseInt(maxDocs), maxActions);
 
         } catch (ParseException ex) {
             HelpFormatter f = new HelpFormatter();
@@ -93,12 +114,20 @@ public class IndexParams {
 
     static class Params {
         private final String[] segs;
+
+        @Override
+        public String toString() {
+            return "Params: dirs = " + Arrays.toString(getDirs()) + "\n\t\tesIndex = " + getEsIndex() + "\n\t\tmaxDocs = " + getMaxDocs() + "\n\t\tmaxActions = " + getMaxActions() + "\n\t\tcanExecute = " + canExecute();
+        }
+
         private final String[] dirs;
         private final String esHost;
         private final int esPort;
         private final String esCluster;
         private final String esIndex;
         private final boolean canExecute;
+        private final int maxDocs;
+        private final String maxActions;
 
         private Params() {
             segs = null;
@@ -108,15 +137,19 @@ public class IndexParams {
             esHost = null;
             esCluster = null;
             canExecute = false;
+            maxDocs = -1;
+            maxActions = "1";
         }
 
-        public Params(String[] segs, String[] dirs, String esHost, int esPort, String esCluster, String esIndex) {
+        public Params(String[] segs, String[] dirs, String esHost, int esPort, String esCluster, String esIndex, int maxDocs, String maxActions) {
             this.segs = segs;
             this.dirs = dirs;
             this.esHost = esHost;
             this.esPort = esPort;
             this.esCluster = esCluster;
             this.esIndex = esIndex;
+            this.maxDocs = maxDocs;
+            this.maxActions = maxActions;
             canExecute = true;
         }
 
@@ -146,6 +179,14 @@ public class IndexParams {
 
         public String getEsIndex() {
             return esIndex;
+        }
+
+        public int getMaxDocs() {
+            return maxDocs;
+        }
+
+        public String getMaxActions() {
+            return maxActions;
         }
     }
 }
