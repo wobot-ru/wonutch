@@ -85,139 +85,132 @@ public class IndexRunner {
         final ExecutionEnvironment env = ExecutionEnvironment.getExecutionEnvironment();
         final Job profileMapJob = Job.getInstance();
 
-//        final String[] segs = params.getSegs();
-//        if (segs != null)
-//            addSegments(profileMapJob, segs);
-//        final String[] dirs = params.getDirs();
-//        if (dirs != null)
-//            addSegmentDirs(profileMapJob, dirs);
-//
-//        DataSource<Tuple2<Text, Writable>> input = env.createInput(new HadoopInputFormat<Text, Writable>(new SequenceFileInputFormat<Text, Writable>(), Text.class, Writable.class, profileMapJob));
-//        FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new NutchWritableMapper());
-//
-//
-//        final GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple4<Types, Text, Post, Profile>> reduceGroup = flatMap.groupBy(0).reduceGroup(new NutchWritableReducer());
-//        final ProjectOperator<?, Tuple2<Text, Post>> postProj = reduceGroup.project(1, 2);
-//        final FilterOperator<Tuple2<Text, Post>> posts = postProj.filter(new FilterFunction<Tuple2<Text, Post>>() {
-//            public boolean filter(Tuple2<Text, Post> tuple) throws Exception {
-//                return tuple.f1 != null;
-//            }
-//        });
-//        final ProjectOperator<?, Tuple2<Text, Profile>> profileProj = reduceGroup.project(1, 3);
-//        final FilterOperator<Tuple2<Text, Profile>> profiles = profileProj.filter(new FilterFunction<Tuple2<Text, Profile>>() {
-//            public boolean filter(Tuple2<Text, Profile> tuple) throws Exception {
-//                return tuple.f1 != null;
-//            }
-//        });
-//
-//        FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostTuple> join = new FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostTuple>() {
-//            public void join(Tuple2<Text, Post> tp, Tuple2<Text, Profile> ta, Collector<PostTuple> collector) throws Exception {
-//                final Post post = tp.f1;
-//                final Profile profile = ta.f1;
-//                final PostDetails result = new PostDetails();
-//                result.id = post.id;
-//                if (post.crawlDate != null)
-//                    result.crawlDate = post.crawlDate;
-//                if (post.digest != null)
-//                    result.digest = post.digest;
-//                if (post.score != null)
-//                    result.score = post.score;
-//                result.segment = post.segment + "-" + profile.segment;
-//                if (post.source != null)
-//                    result.source = post.source;
-//                result.isComment = post.isComment;
-//                result.engagement = post.engagement;
-//                if (post.parentPostId != null)
-//                    result.parentPostId = post.parentPostId;
-//                if (post.body != null)
-//                    result.body = post.body;
-//                if (post.date != null)
-//                    result.date = post.date;
-//                if (post.href != null)
-//                    result.href = post.href;
-//                if (post.smPostId != null)
-//                    result.smPostId = post.smPostId;
-//                if (profile.city != null)
-//                    result.city = profile.city;
-//                if (profile.gender != null)
-//                    result.gender = profile.gender;
-//                if (profile.href != null)
-//                    result.profileHref = profile.href;
-//                if (profile.id != null)
-//                    result.profileId = profile.id;
-//                if (profile.name != null)
-//                    result.profileName = profile.name;
-//                result.reach = profile.reach;
-//                if (profile.smProfileId != null)
-//                    result.smProfileId = profile.smProfileId;
-//
-//                collector.collect(new PostTuple(
-//                        result.id,
-//                        result.body,
-//                        result.city,
-//                        result.crawlDate,
-//                        result.date,
-//                        result.digest,
-//                        result.engagement,
-//                        result.gender,
-//                        result.href,
-//                        result.isComment,
-//                        result.parentPostId,
-//                        result.profileHref,
-//                        result.profileId,
-//                        result.profileName,
-//                        result.reach,
-//                        result.score,
-//                        result.segment,
-//                        result.smPostId,
-//                        result.smProfileId,
-//                        result.source
-//                ));
-//            }
-//        };
-//
-//
-//        DataSet<PostTuple> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
-//        //env.getConfig().enableForceAvro();
-//        //env.getConfig().enableForceKryo();
-//
-//        final DataSink<PostTuple> tuple1DataSink = denorm.writeAsCsv("c:\\tmp\\flink\\dump", CsvInputFormat.DEFAULT_LINE_DELIMITER, CsvInputFormat.DEFAULT_FIELD_DELIMITER, org.apache.flink.core.fs.FileSystem.WriteMode.OVERWRITE);
-//
-//        env.execute("save");
-//
-//
-//
-//
+        final String[] segs = params.getSegs();
+        if (segs != null)
+            addSegments(profileMapJob, segs);
+        final String[] dirs = params.getDirs();
+        if (dirs != null)
+            addSegmentDirs(profileMapJob, dirs);
+
+        DataSource<Tuple2<Text, Writable>> input = env.createInput(new HadoopInputFormat<Text, Writable>(new SequenceFileInputFormat<Text, Writable>(), Text.class, Writable.class, profileMapJob));
+        FlatMapOperator<Tuple2<Text, Writable>, Tuple2<Text, NutchWritable>> flatMap = input.flatMap(new NutchWritableMapper());
+
+
+        final GroupReduceOperator<Tuple2<Text, NutchWritable>, Tuple4<Types, Text, Post, Profile>> reduceGroup = flatMap.groupBy(0).reduceGroup(new NutchWritableReducer());
+        final ProjectOperator<?, Tuple2<Text, Post>> postProj = reduceGroup.project(1, 2);
+        final FilterOperator<Tuple2<Text, Post>> posts = postProj.filter(new FilterFunction<Tuple2<Text, Post>>() {
+            public boolean filter(Tuple2<Text, Post> tuple) throws Exception {
+                return tuple.f1 != null;
+            }
+        });
+        final ProjectOperator<?, Tuple2<Text, Profile>> profileProj = reduceGroup.project(1, 3);
+        final FilterOperator<Tuple2<Text, Profile>> profiles = profileProj.filter(new FilterFunction<Tuple2<Text, Profile>>() {
+            public boolean filter(Tuple2<Text, Profile> tuple) throws Exception {
+                return tuple.f1 != null;
+            }
+        });
+
+        FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostTuple> join = new FlatJoinFunction<Tuple2<Text, Post>, Tuple2<Text, Profile>, PostTuple>() {
+            public void join(Tuple2<Text, Post> tp, Tuple2<Text, Profile> ta, Collector<PostTuple> collector) throws Exception {
+                final Post post = tp.f1;
+                final Profile profile = ta.f1;
+                final PostDetails result = new PostDetails();
+                result.id = post.id;
+                if (post.crawlDate != null)
+                    result.crawlDate = post.crawlDate;
+                if (post.digest != null)
+                    result.digest = post.digest;
+                if (post.score != null)
+                    result.score = post.score;
+                result.segment = post.segment + "-" + profile.segment;
+                if (post.source != null)
+                    result.source = post.source;
+                result.isComment = post.isComment;
+                result.engagement = post.engagement;
+                if (post.parentPostId != null)
+                    result.parentPostId = post.parentPostId;
+                if (post.body != null)
+                    result.body = post.body;
+                if (post.date != null)
+                    result.date = post.date;
+                if (post.href != null)
+                    result.href = post.href;
+                if (post.smPostId != null)
+                    result.smPostId = post.smPostId;
+                if (profile.city != null)
+                    result.city = profile.city;
+                if (profile.gender != null)
+                    result.gender = profile.gender;
+                if (profile.href != null)
+                    result.profileHref = profile.href;
+                if (profile.id != null)
+                    result.profileId = profile.id;
+                if (profile.name != null)
+                    result.profileName = profile.name;
+                result.reach = profile.reach;
+                if (profile.smProfileId != null)
+                    result.smProfileId = profile.smProfileId;
+
+                collector.collect(new PostTuple(
+                        result.id,
+                        result.body,
+                        result.city,
+                        result.crawlDate,
+                        result.date,
+                        result.digest,
+                        result.engagement,
+                        result.gender,
+                        result.href,
+                        result.isComment,
+                        result.parentPostId,
+                        result.profileHref,
+                        result.profileId,
+                        result.profileName,
+                        result.reach,
+                        result.score,
+                        result.segment,
+                        result.smPostId,
+                        result.smProfileId,
+                        result.source
+                ));
+            }
+        };
+
+
+        DataSet<PostTuple> denorm = posts.join(profiles).where(0).equalTo(0).with(join);
+        //env.getConfig().enableForceAvro();
+        //env.getConfig().enableForceKryo();
+
+        final DataSink<PostTuple> tuple1DataSink = denorm.writeAsCsv("hdfs://nnode:8020/user/nutch/flink/", CsvInputFormat.DEFAULT_LINE_DELIMITER, CsvInputFormat.DEFAULT_FIELD_DELIMITER, org.apache.flink.core.fs.FileSystem.WriteMode.OVERWRITE);
+
+        env.execute("save to tmp");
+
+
         final StreamExecutionEnvironment streamEnv = StreamExecutionEnvironment.getExecutionEnvironment();
 
 
         TupleTypeInfo<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>
                 typeInfo = new TupleTypeInfo<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(
-                BasicTypeInfo.STRING_TYPE_INFO,   //String id,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String body,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String city,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String crawlDate,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String date,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String digest,
-                BasicTypeInfo.LONG_TYPE_INFO,     //long engagement,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String gender,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String href,
-                BasicTypeInfo.BOOLEAN_TYPE_INFO,  //Boolean isComment,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String parentPostId
-                BasicTypeInfo.STRING_TYPE_INFO,   //String profileHref,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String profileId,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String profileName,
-                BasicTypeInfo.LONG_TYPE_INFO,     //long reach,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String score,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String segment,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String smPostId,
-                BasicTypeInfo.STRING_TYPE_INFO,   //String smProfileId,
-                BasicTypeInfo.STRING_TYPE_INFO);  //String source
-
-
-//        final TupleTypeInfo<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>
-//                tupleTypeInfo = TupleTypeInfo.getBasicAndBasicValueTupleTypeInfo(String.class, String.class, String.class, String.class, String.class, String.class, Long.class, String.class, String.class, Boolean.class, String.class, String.class, String.class, String.class, Long.class, String.class, String.class, String.class, String.class, String.class);
-//
+                BasicTypeInfo.STRING_TYPE_INFO,   //String id,          0
+                BasicTypeInfo.STRING_TYPE_INFO,   //String body,        1
+                BasicTypeInfo.STRING_TYPE_INFO,   //String city,        2
+                BasicTypeInfo.STRING_TYPE_INFO,   //String crawlDate,   3
+                BasicTypeInfo.STRING_TYPE_INFO,   //String date,        4
+                BasicTypeInfo.STRING_TYPE_INFO,   //String digest,      5
+                BasicTypeInfo.LONG_TYPE_INFO,     //long engagement,    6
+                BasicTypeInfo.STRING_TYPE_INFO,   //String gender,      7
+                BasicTypeInfo.STRING_TYPE_INFO,   //String href,        8
+                BasicTypeInfo.BOOLEAN_TYPE_INFO,  //Boolean isComment,  9
+                BasicTypeInfo.STRING_TYPE_INFO,   //String parentPostId 10
+                BasicTypeInfo.STRING_TYPE_INFO,   //String profileHref, 11
+                BasicTypeInfo.STRING_TYPE_INFO,   //String profileId,   12
+                BasicTypeInfo.STRING_TYPE_INFO,   //String profileName, 13
+                BasicTypeInfo.LONG_TYPE_INFO,     //long reach,         14
+                BasicTypeInfo.STRING_TYPE_INFO,   //String score,       15
+                BasicTypeInfo.STRING_TYPE_INFO,   //String segment,     16
+                BasicTypeInfo.STRING_TYPE_INFO,   //String smPostId,    17
+                BasicTypeInfo.STRING_TYPE_INFO,   //String smProfileId, 18
+                BasicTypeInfo.STRING_TYPE_INFO);  //String source       19
 
         final TupleCsvInputFormat<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>
                 inputFormat = new TupleCsvInputFormat<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(new org.apache.flink.core.fs.Path("c:\\tmp\\flink\\dump"), typeInfo);
@@ -226,7 +219,7 @@ public class IndexRunner {
 
         final WindowedStream<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>, Tuple, TimeWindow> timeWindow = source.keyBy(0).timeWindow(Time.seconds(120), Time.seconds(1));
         final SingleOutputStreamOperator<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>> tumblingwindow = timeWindow.maxBy(6).name("timeWindow");
-        //tumblingwindow.addSink(new PrintSinkFunction<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(true));
+        //tumblingwindow.addSink(new PrintSinkFunction<PostTuple>(true));
 
         Map<String, String> config = new HashMap<String, String>();
         config.put(ElasticsearchSink.CONFIG_KEY_BULK_FLUSH_MAX_ACTIONS, params.getMaxActions());
@@ -240,55 +233,27 @@ public class IndexRunner {
         tumblingwindow.addSink(new ElasticsearchSink<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(config, transports, new ElasticsearchSinkFunction<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>() {
             public void process(Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String> post, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
                 Map<String, Object> json = new HashMap<String, Object>();
-                PostTuple c= (PostTuple) post;
-//                json.put(DetailedPost.PropertyName.ID, post.id);
-//                json.put(DetailedPost.PropertyName.CRAWL_DATE, post.crawlDate);
-//                json.put(DetailedPost.PropertyName.DIGEST, post.digest);
-//                json.put(DetailedPost.PropertyName.SCORE, post.score);
-//                json.put(DetailedPost.PropertyName.SEGMENT, post.segment + "-" + profile.segment);
-//                json.put(DetailedPost.PropertyName.SOURCE, post.source);
-//                json.put(DetailedPost.PropertyName.IS_COMMENT, post.isComment);
-//                json.put(DetailedPost.PropertyName.ENGAGEMENT, post.engagement);
-//                json.put(DetailedPost.PropertyName.PARENT_POST_ID, post.parentPostId);
-//                json.put(DetailedPost.PropertyName.POST_BODY, post.body);
-//                json.put(DetailedPost.PropertyName.POST_DATE, post.date);
-//                json.put(DetailedPost.PropertyName.POST_HREF, post.href);
-//                json.put(DetailedPost.PropertyName.SM_POST_ID, post.smPostId);
-//
-//                json.put(DetailedPost.PropertyName.PROFILE_CITY, profile.city);
-//                json.put(DetailedPost.PropertyName.PROFILE_GENDER, profile.gender);
-//                json.put(DetailedPost.PropertyName.PROFILE_HREF, profile.href);
-//                json.put(DetailedPost.PropertyName.PROFILE_ID, profile.id);
-//                json.put(DetailedPost.PropertyName.PROFILE_NAME, profile.name);
-//                json.put(DetailedPost.PropertyName.REACH, profile.reach);
-//                json.put(DetailedPost.PropertyName.SM_PROFILE_ID, profile.smProfileId);
-
-
-//                json.put(DetailedPost.PropertyName.ID, post.id);
-//                json.put(DetailedPost.PropertyName.CRAWL_DATE, post.crawlDate);
-//                json.put(DetailedPost.PropertyName.DIGEST, post.digest);
-//                json.put(DetailedPost.PropertyName.SCORE, post.score);
-//                json.put(DetailedPost.PropertyName.SEGMENT, post.segment);
-//                json.put(DetailedPost.PropertyName.SOURCE, post.source);
-//                json.put(DetailedPost.PropertyName.IS_COMMENT, post.isComment);
-//                json.put(DetailedPost.PropertyName.ENGAGEMENT, post.engagement);
-//                json.put(DetailedPost.PropertyName.PARENT_POST_ID, post.parentPostId);
-//                json.put(DetailedPost.PropertyName.POST_BODY, post.body);
-//                json.put(DetailedPost.PropertyName.POST_DATE, post.date);
-//                json.put(DetailedPost.PropertyName.POST_HREF, post.href);
-//                json.put(DetailedPost.PropertyName.SM_POST_ID, post.smPostId);
-//
-//                json.put(DetailedPost.PropertyName.PROFILE_CITY, post.city);
-//                json.put(DetailedPost.PropertyName.PROFILE_GENDER, post.gender);
-//                json.put(DetailedPost.PropertyName.PROFILE_HREF, post.profileHref);
-//                json.put(DetailedPost.PropertyName.PROFILE_ID, post.profileId);
-//                json.put(DetailedPost.PropertyName.PROFILE_NAME, post.profileName);
-//                json.put(DetailedPost.PropertyName.REACH, post.reach);
-//                json.put(DetailedPost.PropertyName.SM_PROFILE_ID, post.smProfileId);
-
-
                 json.put(DetailedPost.PropertyName.ID, post.f0);
                 json.put(DetailedPost.PropertyName.POST_BODY, post.f1);
+                json.put(DetailedPost.PropertyName.PROFILE_CITY, post.f2);
+                json.put(DetailedPost.PropertyName.CRAWL_DATE, post.f3);
+                json.put(DetailedPost.PropertyName.POST_DATE, post.f4);
+                json.put(DetailedPost.PropertyName.DIGEST, post.f5);
+                json.put(DetailedPost.PropertyName.ENGAGEMENT, post.f6);
+                json.put(DetailedPost.PropertyName.PROFILE_GENDER, post.f7);
+                json.put(DetailedPost.PropertyName.POST_HREF, post.f8);
+                json.put(DetailedPost.PropertyName.IS_COMMENT, post.f9);
+                json.put(DetailedPost.PropertyName.PARENT_POST_ID, post.f10);
+                json.put(DetailedPost.PropertyName.PROFILE_HREF, post.f11);
+                json.put(DetailedPost.PropertyName.PROFILE_ID, post.f12);
+                json.put(DetailedPost.PropertyName.PROFILE_NAME, post.f13);
+                json.put(DetailedPost.PropertyName.REACH, post.f14);
+                json.put(DetailedPost.PropertyName.SCORE, post.f15);
+                json.put(DetailedPost.PropertyName.SEGMENT, post.f16);
+                json.put(DetailedPost.PropertyName.SM_POST_ID, post.f17);
+                json.put(DetailedPost.PropertyName.SM_PROFILE_ID, post.f18);
+                json.put(DetailedPost.PropertyName.SOURCE, post.f19);
+
 
                 final IndexRequest request = Requests.indexRequest()
                         .create(false)
@@ -301,7 +266,7 @@ public class IndexRunner {
             }
         }));
 
-        streamEnv.execute("trololo");
+        streamEnv.execute("SAVE TO ES...");
         //final IterativeDataSet<Tuple2<Post, Profile>> firstIteration = denorm.iterate(5);
         //DataSet<Tuple2<Post, Profile>> firstResult = firstIteration.closeWith(firstIteration);
         //DataSet<Tuple2<Post, Profile>> firstResult = firstIteration.closeWith(firstIteration.map(new IdMapper()));
@@ -432,7 +397,6 @@ public class IndexRunner {
         private static final long serialVersionUID = 1L;
 
         public PostTuple() {
-            super();
         }
 
         public PostTuple(
@@ -457,7 +421,7 @@ public class IndexRunner {
                 String smProfileId,
                 String source) {
 
-            super(
+            this.setFields(
                     id,
                     body,
                     city,
@@ -478,10 +442,31 @@ public class IndexRunner {
                     smPostId,
                     smProfileId,
                     source);
+//            super(
+//                    id,
+//                    body,
+//                    city,
+//                    crawlDate,
+//                    date,
+//                    digest,
+//                    engagement,
+//                    gender,
+//                    href,
+//                    isComment,
+//                    parentPostId,
+//                    profileHref,
+//                    profileId,
+//                    profileName,
+//                    reach,
+//                    score,
+//                    segment,
+//                    smPostId,
+//                    smProfileId,
+//                    source);
         }
 
         public String getId() {
-            return f0;
+            return this.f0;
         }
     }
 }
