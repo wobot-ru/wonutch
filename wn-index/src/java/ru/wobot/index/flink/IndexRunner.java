@@ -181,9 +181,12 @@ public class IndexRunner {
         //env.getConfig().enableForceAvro();
         //env.getConfig().enableForceKryo();
 
-        final DataSink<PostTuple> tuple1DataSink = denorm.writeAsCsv("hdfs://nnode:8020/user/nutch/flink/", CsvInputFormat.DEFAULT_LINE_DELIMITER, CsvInputFormat.DEFAULT_FIELD_DELIMITER, org.apache.flink.core.fs.FileSystem.WriteMode.OVERWRITE);
+        final String flinkTmp = params.getFlinkTmpDir() + System.currentTimeMillis();
+        final DataSink<PostTuple> tuple1DataSink = denorm.writeAsCsv(flinkTmp, CsvInputFormat.DEFAULT_LINE_DELIMITER, CsvInputFormat.DEFAULT_FIELD_DELIMITER, org.apache.flink.core.fs.FileSystem.WriteMode.OVERWRITE);
 
-        env.execute("save to tmp");
+        final long totalPosts = denorm.count();
+        LOG.info("Total posts to import:" + totalPosts);
+        //env.execute("save to tmp");
 
 
         final StreamExecutionEnvironment streamEnv = StreamExecutionEnvironment.getExecutionEnvironment();
@@ -213,7 +216,7 @@ public class IndexRunner {
                 BasicTypeInfo.STRING_TYPE_INFO);  //String source       19
 
         final TupleCsvInputFormat<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>
-                inputFormat = new TupleCsvInputFormat<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(new org.apache.flink.core.fs.Path("c:\\tmp\\flink\\dump"), typeInfo);
+                inputFormat = new TupleCsvInputFormat<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(new org.apache.flink.core.fs.Path(flinkTmp), typeInfo);
         inputFormat.setLenient(true);
         final DataStreamSource<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>> source = streamEnv.createInput(inputFormat, typeInfo);
 
@@ -236,7 +239,8 @@ public class IndexRunner {
                 json.put(DetailedPost.PropertyName.ID, post.f0);
                 json.put(DetailedPost.PropertyName.POST_BODY, post.f1);
                 json.put(DetailedPost.PropertyName.PROFILE_CITY, post.f2);
-                json.put(DetailedPost.PropertyName.CRAWL_DATE, post.f3);
+                if (post.f3 != null && !post.f3.equals(""))
+                    json.put(DetailedPost.PropertyName.CRAWL_DATE, post.f3);
                 json.put(DetailedPost.PropertyName.POST_DATE, post.f4);
                 json.put(DetailedPost.PropertyName.DIGEST, post.f5);
                 json.put(DetailedPost.PropertyName.ENGAGEMENT, post.f6);
@@ -275,7 +279,7 @@ public class IndexRunner {
 //        streamEnv.execute("upload to elastic");
 
         Long stopTime = System.currentTimeMillis();
-        //System.out.println("Total posts imported=" + collect.size());
+        System.out.println("Total posts imported=" + totalPosts);
         long elapsedTime = stopTime - startTime;
         System.out.println("elapsedTime=" + elapsedTime);
     }

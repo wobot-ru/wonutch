@@ -18,6 +18,7 @@ public class IndexParams {
     private final static String ES_PORT_KEY = "elastic.port";
     private final static String ES_CLUSTER_KEY = "elastic.cluster";
     private final static String ES_INDEX_KEY = "elastic.index";
+    private final static String FLINK_TMP_DIR = "flink.tmp.dir";
 
     public static Params parse(String[] args) {
         boolean showHelp = false;
@@ -77,6 +78,7 @@ public class IndexParams {
             int esPort = -1;
             String esCluster = null;
             String esIndex = null;
+            String flinkTmpDir = null;
             try {
                 Configuration config = new PropertiesConfiguration(PROPERTY_FILE_NAME);
                 if (!config.containsKey(ES_HOST_KEY)) {
@@ -91,17 +93,21 @@ public class IndexParams {
                 if (!config.containsKey(ES_INDEX_KEY)) {
                     throw new RuntimeException(ES_INDEX_KEY + " not defined in " + PROPERTY_FILE_NAME);
                 }
+                if (!config.containsKey(FLINK_TMP_DIR)) {
+                    throw new RuntimeException(FLINK_TMP_DIR+ " not defined in " + PROPERTY_FILE_NAME);
+                }
 
                 esHost = config.getString(ES_HOST_KEY);
                 esPort = config.getInt(ES_PORT_KEY);
                 esCluster = config.getString(ES_CLUSTER_KEY);
                 esIndex = config.getString(ES_INDEX_KEY);
+                flinkTmpDir = config.getString(FLINK_TMP_DIR);
             } catch (ConfigurationException e) {
                 e.printStackTrace();
             }
             final String maxDocs = cmd.getOptionValue("docs", "-1");
             final String maxActions = cmd.getOptionValue("max", "1");
-            return new Params(cmd.getOptionValues(SEG_OP), cmd.getOptionValues(DIR_OP), esHost, esPort, esCluster, esIndex, Integer.parseInt(maxDocs), maxActions);
+            return new Params(cmd.getOptionValues(SEG_OP), cmd.getOptionValues(DIR_OP), flinkTmpDir, esHost, esPort, esCluster, esIndex, Integer.parseInt(maxDocs), maxActions);
 
         } catch (ParseException ex) {
             HelpFormatter f = new HelpFormatter();
@@ -121,6 +127,7 @@ public class IndexParams {
         }
 
         private final String[] dirs;
+        private final String flinkTmpDir;
         private final String esHost;
         private final int esPort;
         private final String esCluster;
@@ -132,6 +139,7 @@ public class IndexParams {
         private Params() {
             segs = null;
             dirs = null;
+            flinkTmpDir = null;
             esIndex = null;
             esPort = -1;
             esHost = null;
@@ -141,9 +149,10 @@ public class IndexParams {
             maxActions = "1";
         }
 
-        public Params(String[] segs, String[] dirs, String esHost, int esPort, String esCluster, String esIndex, int maxDocs, String maxActions) {
+        public Params(String[] segs, String[] dirs, String flinkTmpDir, String esHost, int esPort, String esCluster, String esIndex, int maxDocs, String maxActions) {
             this.segs = segs;
             this.dirs = dirs;
+            this.flinkTmpDir = flinkTmpDir;
             this.esHost = esHost;
             this.esPort = esPort;
             this.esCluster = esCluster;
@@ -187,6 +196,10 @@ public class IndexParams {
 
         public String getMaxActions() {
             return maxActions;
+        }
+
+        public String getFlinkTmpDir() {
+            return flinkTmpDir;
         }
     }
 }
