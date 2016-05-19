@@ -32,10 +32,7 @@ import org.apache.flink.streaming.api.windowing.assigners.ProcessingTimeSessionW
 import org.apache.flink.streaming.api.windowing.evictors.CountEvictor;
 import org.apache.flink.streaming.api.windowing.evictors.TimeEvictor;
 import org.apache.flink.streaming.api.windowing.time.Time;
-import org.apache.flink.streaming.api.windowing.triggers.CountTrigger;
-import org.apache.flink.streaming.api.windowing.triggers.EventTimeTrigger;
-import org.apache.flink.streaming.api.windowing.triggers.ProcessingTimeTrigger;
-import org.apache.flink.streaming.api.windowing.triggers.Trigger;
+import org.apache.flink.streaming.api.windowing.triggers.*;
 import org.apache.flink.streaming.api.windowing.windows.GlobalWindow;
 import org.apache.flink.streaming.api.windowing.windows.TimeWindow;
 import org.apache.flink.streaming.connectors.elasticsearch2.ElasticsearchSink;
@@ -184,6 +181,7 @@ public class IndexRunner {
         final String flinkTmp = params.getFlinkTmpDir() + System.currentTimeMillis();
         final DataSink<PostTuple> tuple1DataSink = denorm.writeAsCsv(flinkTmp, CsvInputFormat.DEFAULT_LINE_DELIMITER, CsvInputFormat.DEFAULT_FIELD_DELIMITER, org.apache.flink.core.fs.FileSystem.WriteMode.OVERWRITE);
 
+        //final long totalPosts = -1;
         final long totalPosts = denorm.count();
         LOG.info("Total posts to import:" + totalPosts);
         //env.execute("save to tmp");
@@ -220,20 +218,28 @@ public class IndexRunner {
         inputFormat.setLenient(true);
         final DataStreamSource<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>> source = streamEnv.createInput(inputFormat, typeInfo);
 
-        final WindowedStream<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>, Tuple, TimeWindow> timeWindow = source.keyBy(0).timeWindow(Time.seconds(120), Time.seconds(1));
-        final SingleOutputStreamOperator<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>> tumblingwindow = timeWindow.maxBy(6).name("timeWindow");
+//        final WindowedStream<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>, Tuple, TimeWindow> timeWindow = source.keyBy(0).timeWindow(Time.seconds(120), Time.seconds(1));
+//        final SingleOutputStreamOperator<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>> tumblingwindow = timeWindow.maxBy(6).name("timeWindow");
         //tumblingwindow.addSink(new PrintSinkFunction<PostTuple>(true));
 
         Map<String, String> config = new HashMap<String, String>();
         config.put(ElasticsearchSink.CONFIG_KEY_BULK_FLUSH_MAX_ACTIONS, params.getMaxActions());
+        config.put(ElasticsearchSink.CONFIG_KEY_BULK_FLUSH_MAX_SIZE_MB, "5");
+        //config.put(ElasticsearchSink.CONFIG_KEY_BULK_FLUSH_INTERVAL_MS, "30000");
         config.put("cluster.name", params.getEsCluster());
+        config.put("client.transport.ignore_cluster_name", "true");
 
         List<InetSocketAddress> transports = new ArrayList<InetSocketAddress>();
         transports.add(new InetSocketAddress(InetAddress.getByName(params.getEsHost()), params.getEsPort()));
 
         final String esIndex = params.getEsIndex();
 
-        tumblingwindow.addSink(new ElasticsearchSink<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(config, transports, new ElasticsearchSinkFunction<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>() {
+        //tumblingwindow.addSink(new ElasticsearchSink<Tuple20<String, String, String, String, String, String, Long, Strin
+        // g, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(config, transports, new ElasticsearchSinkFunction<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>() {
+        final KeyedStream<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>, Tuple> ks = source.keyBy(0);
+        //final WindowedStream<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>, Tuple, TimeWindow> window = ks.timeWindow(Time.seconds(10)).trigger(ContinuousProcessingTimeTrigger.of(Time.seconds(1)));
+        //final SingleOutputStreamOperator<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>> countWindow = source.keyBy(0).countWindow(2000, 1).maxBy(14).name("CountWindow");
+        ks.countWindow(1).maxBy(14).addSink(new ElasticsearchSink<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>(config, transports, new ElasticsearchSinkFunction<Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String>>() {
             public void process(Tuple20<String, String, String, String, String, String, Long, String, String, Boolean, String, String, String, String, Long, String, String, String, String, String> post, RuntimeContext runtimeContext, RequestIndexer requestIndexer) {
                 Map<String, Object> json = new HashMap<String, Object>();
                 json.put(DetailedPost.PropertyName.ID, post.f0);

@@ -123,7 +123,7 @@ public class IndexParams {
 
         @Override
         public String toString() {
-            return "Params: dirs = " + Arrays.toString(getDirs()) + "\n\t\tesIndex = " + getEsIndex() + "\n\t\tmaxDocs = " + getMaxDocs() + "\n\t\tmaxActions = " + getMaxActions() + "\n\t\tcanExecute = " + canExecute();
+            return "Params: dirs = " + Arrays.toString(getDirs()) + "\n\t\tesHost = " + getEsHost()+ "\n\t\tesIndex = " + getEsIndex() + "\n\t\tmaxDocs = " + getMaxDocs() + "\n\t\tmaxActions = " + getMaxActions() + "\n\t\tcanExecute = " + canExecute();
         }
 
         private final String[] dirs;
