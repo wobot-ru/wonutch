@@ -58,15 +58,22 @@
                                         <exclude name="**/target/"/>
                                     </fileset>
                                 </copy>
-                                <copy file="build-conf/src/plugin/build.xml" overwrite="true" todir="nutch/src/plugin"/>
+                                <copy file="build-conf/src/plugin/build.xml" overwrite="true"
+                                      todir="nutch/src/plugin"/>
                                 <copy file="build-conf/ivy/ivysettings.xml" overwrite="true" todir="nutch/ivy"/>
                                 <copy file="build-conf/ivy/ivy.xml" overwrite="true" todir="nutch/ivy"/>
-                                <copy file="build-conf/conf/nutch-site.xml.template" overwrite="true" todir="nutch/conf"/>
-                                <copy file="build-conf/conf/prefix-urlfilter.txt.template" overwrite="true" todir="nutch/conf"/>
-                                <copy file="build-conf/conf/parse-plugins.xml" overwrite="true" todir="nutch/conf"/>
+                                <copy file="build-conf/conf/nutch-site.xml.template" overwrite="true"
+                                      todir="nutch/conf"/>
+                                <copy file="build-conf/conf/prefix-urlfilter.txt.template" overwrite="true"
+                                      todir="nutch/conf"/>
+                                <copy file="build-conf/conf/parse-plugins.xml" overwrite="true"
+                                      todir="nutch/conf"/>
                                 <copy file="build-conf/conf/vk-accounts.txt" overwrite="true" todir="nutch/conf"/>
                                 <copy file="build-conf/conf/fb-accounts.txt" overwrite="true" todir="nutch/conf"/>
                                 <copy file="build-conf/conf/cookies.json" overwrite="true" todir="nutch/conf"/>
+                                <copy overwrite="true" todir="nutch/conf/profiles.sm">
+                                    <fileset dir="build-conf/conf/profiles.sm"/>
+                                </copy>
                                 <ant dir="${project.basedir}/nutch" target="runtime"/>
                             </target>
                         </configuration>

@@ -190,7 +190,6 @@ do
   # fetching the segment
   echo "Fetching : $SEGMENT"
   # enable parse during fetch
-  #__bin_nutch fetch $commonOptions -D fetcher.timelimit.mins=$timeLimitFetch "$CRAWL_PATH"/segments/$SEGMENT -noParsing -threads $numThreads
    __bin_nutch fetch $commonOptions -D fetcher.timelimit.mins=$timeLimitFetch "$CRAWL_PATH"/segments/$SEGMENT -threads $numThreads
 
   # stop selenium grid in all nodes in file nodes.txt after fetch  
@@ -237,7 +236,7 @@ do
   fi
 
   echo "Start export to kafka"
-  $FLINK_HOME/nutch2kafka.sh "$CRAWL_PATH"/segments/$SEGMENT
+  $FLINK_HOME/nutch-2-kafka.sh "$CRAWL_PATH"/segments/$SEGMENT
   echo "Finish export to kafka"	
   
   #######################################################
