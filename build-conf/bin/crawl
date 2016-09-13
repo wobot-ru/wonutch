@@ -132,6 +132,8 @@ function __bin_nutch {
 echo "Injecting seed URLs"
 __bin_nutch inject "$CRAWL_PATH"/crawldb "$SEEDDIR"
 
+# current date
+NOW=`date +"%m_%d_%Y"`
 
 # main loop : rounds of generate - fetch - parse - update
 for ((a=1; a <= LIMIT ; a++))
@@ -140,6 +142,16 @@ do
   then
    echo "STOP file found - escaping loop"
    break
+  fi
+
+  # if next day - clean crawldb and inject again
+  if [ $NOW != `date +"%m_%d_%Y"` ] 
+  then
+    echo "Date changed"                                
+    NOW=`date +"%m_%d_%Y"`
+    hadoop fs -rm -r -skipTrash "$CRAWL_PATH"/crawldb "$CRAWL_PATH"/segments
+    echo "Injecting seed URLs"
+    __bin_nutch inject "$CRAWL_PATH"/crawldb "$SEEDDIR"
   fi
 
   echo `date` ": Iteration $a of $LIMIT"
